@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { encodeDeployData, type Abi, type Address, type Hex } from "viem";
-import { collateralTokenAbi, publicClient, verifierAddress, walletClient, type InjectedProvider } from "@/lib/moncast-chain";
+import { collateralTokenAbi, collateralTokenAddress, publicClient, verifierAddress, walletClient, type InjectedProvider } from "@/lib/moncast-chain";
 import { useMoncastWallet } from "@/lib/use-moncast-wallet";
 
 type Artifact = { abi: Abi; bytecode: Hex };
@@ -10,7 +10,7 @@ type ArtifactSet = { AttestedProofVerifier: Artifact; MoncastProtocol: Artifact 
 
 export default function DeployPage() {
   const [attestor, setAttestor] = useState(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS ?? "");
-  const [collateral, setCollateral] = useState(process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "");
+  const [collateral, setCollateral] = useState(collateralTokenAddress ?? "");
   const [verifier, setVerifier] = useState(verifierAddress ?? "");
   const [status, setStatus] = useState("首次部署需要 2 笔交易；已有验证器时可仅更新主协议，需 1 笔交易。");
   const [addresses, setAddresses] = useState<{ usdc?: Address; verifier?: Address; protocol?: Address }>({
