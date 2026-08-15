@@ -15,6 +15,14 @@ npm run dev
 
 ## Monad Testnet 部署
 
+当前部署（Chain ID `10143`）：
+
+- USDC：[`0x534b…943A3`](https://testnet.monadscan.com/address/0x534b2f3A21130d7a60830c2Df862319e593943A3)
+- AttestedProofVerifier：[`0x3286…56ed1`](https://testnet.monadscan.com/address/0x32867799f03d56aac4D2A900e4b9B4404A056ed1)
+- MoncastProtocol：[`0xaf65…34f1c`](https://testnet.monadscan.com/address/0xaf65b9d11d45547852d4355726d6b061b1c34f1c)
+
+完整部署记录见 [`deployments/monad-testnet.json`](deployments/monad-testnet.json)。
+
 ```bash
 npm run keys:testnet
 npm run build:contracts
