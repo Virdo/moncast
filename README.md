@@ -23,7 +23,8 @@ npm run dev
 
 - USDC：[`0x534b…943A3`](https://testnet.monadscan.com/address/0x534b2f3A21130d7a60830c2Df862319e593943A3)
 - AttestedProofVerifier：[`0x3286…56ed1`](https://testnet.monadscan.com/address/0x32867799f03d56aac4D2A900e4b9B4404A056ed1)
-- MoncastProtocol：[`0xaf65…34f1c`](https://testnet.monadscan.com/address/0xaf65b9d11d45547852d4355726d6b061b1c34f1c)
+- MoncastProtocol v2：[`0x3d36…2cde3`](https://testnet.monadscan.com/address/0x3d36aa081b72b5037f5ae7e3adfd856d84c2cde3)
+- 部署交易：[`0x0c82…76a9d`](https://testnet.monadscan.com/tx/0x0c8289f662dcb0f1d11975f048eaf862f57397da381fd96db3a66d1c58976a9d)
 
 完整部署记录见 [`deployments/monad-testnet.json`](deployments/monad-testnet.json)。
 
