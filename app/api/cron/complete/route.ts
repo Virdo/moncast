@@ -2,7 +2,7 @@ import { createWalletClient, encodeFunctionData, http, type Address, type Hex } 
 import { privateKeyToAccount } from "viem/accounts";
 import { monadTestnet, moncastAddress, protocolAbi, publicClient } from "@/lib/moncast-chain";
 import { createCompletionAttestation } from "@/lib/server/attestation";
-import { readRegistry } from "@/lib/server/registry";
+import { readProtocolPacts } from "@/lib/server/registry";
 
 function localHour(offsetMinutes: number) {
   return new Date(Date.now() + offsetMinutes * 60_000).getUTCHours();
@@ -17,10 +17,10 @@ export async function GET(request: Request) {
   if (!relayerKey || !moncastAddress) return Response.json({ error: "RELAYER_NOT_CONFIGURED" }, { status: 503 });
   const account = privateKeyToAccount(relayerKey);
   const wallet = createWalletClient({ account, chain: monadTestnet, transport: http(monadTestnet.rpcUrls.default.http[0]) });
-  const registry = await readRegistry();
+  const pacts = await readProtocolPacts(moncastAddress);
   const results: Array<Record<string, unknown>> = [];
 
-  for (const pact of registry.pacts) {
+  for (const pact of pacts) {
     if (pact.recruitmentEndsAt <= Date.now() / 1000) {
       try {
         const state = await publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "pacts", args: [BigInt(pact.id)], blockTag: "safe" });

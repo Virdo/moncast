@@ -26,6 +26,7 @@ import {
 import { useMoncastWallet } from "@/lib/use-moncast-wallet";
 
 type RegistryPact = {
+  protocolAddress: Address;
   id: string;
   creator: Address;
   title: string;
@@ -221,14 +222,14 @@ export default function Home() {
   }, [refreshRegistry, wallet]);
 
   const startPactNow = useCallback(async (pact: PactSummary) => {
-    const account = wallet.account ?? await wallet.connect();
-    if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
-    if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
-    if (!pact.isCreator) throw new Error("只有契约发起人可以立即开始。");
-    await assertEarlyStartSupport();
     setStartingPactId(pact.id);
-    setToast("请确认立即开始交易；确认后停止招募并划转当前成员保证金");
     try {
+      const account = wallet.account ?? await wallet.connect();
+      if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
+      if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
+      if (!pact.isCreator) throw new Error("只有契约发起人可以立即开始。");
+      await assertEarlyStartSupport();
+      setToast("请确认立即开始交易；确认后停止招募并划转当前成员保证金");
       const { receipt } = await writeWithTightGas(wallet.provider, account, moncastAddress, protocolAbi, "startPactNow", [BigInt(pact.id)]);
       const activated = parseEventLogs({ abi: protocolAbi, logs: receipt.logs, eventName: "PactActivated", strict: true })
         .some((event) => event.args.pactId === BigInt(pact.id));

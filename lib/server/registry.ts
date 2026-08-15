@@ -9,6 +9,7 @@ export type AutomationMember = {
 };
 
 export type RegisteredPact = {
+  protocolAddress: Address;
   id: string;
   creator: Address;
   title: string;
@@ -27,7 +28,8 @@ export type RegisteredPact = {
   members: AutomationMember[];
 };
 
-type Registry = { version: 1; pacts: RegisteredPact[] };
+type StoredPact = Omit<RegisteredPact, "protocolAddress"> & { protocolAddress?: Address };
+type Registry = { version: 1; pacts: StoredPact[] };
 
 const registryPath = resolve(process.cwd(), "data", "automation-registry.json");
 const emptyRegistry: Registry = { version: 1, pacts: [] };
@@ -41,6 +43,17 @@ export async function readRegistry(): Promise<Registry> {
   }
 }
 
+export function pactsForProtocol(registry: Registry, protocolAddress: Address): RegisteredPact[] {
+  const expected = protocolAddress.toLowerCase();
+  return registry.pacts.filter((pact): pact is RegisteredPact =>
+    typeof pact.protocolAddress === "string" && pact.protocolAddress.toLowerCase() === expected,
+  );
+}
+
+export async function readProtocolPacts(protocolAddress: Address) {
+  return pactsForProtocol(await readRegistry(), protocolAddress);
+}
+
 async function writeRegistry(value: Registry) {
   await mkdir(dirname(registryPath), { recursive: true });
   const temporary = `${registryPath}.${process.pid}.tmp`;
@@ -50,16 +63,18 @@ async function writeRegistry(value: Registry) {
 
 export async function registerPact(pact: RegisteredPact) {
   const registry = await readRegistry();
-  const index = registry.pacts.findIndex((item) => item.id === pact.id);
+  const index = registry.pacts.findIndex((item) => item.id === pact.id
+    && item.protocolAddress?.toLowerCase() === pact.protocolAddress.toLowerCase());
   if (index >= 0) registry.pacts[index] = pact;
   else registry.pacts.push(pact);
   await writeRegistry(registry);
   return pact;
 }
 
-export async function registerMember(pactId: string, member: AutomationMember) {
+export async function registerMember(protocolAddress: Address, pactId: string, member: AutomationMember) {
   const registry = await readRegistry();
-  const pact = registry.pacts.find((item) => item.id === pactId);
+  const pact = registry.pacts.find((item) => item.id === pactId
+    && item.protocolAddress?.toLowerCase() === protocolAddress.toLowerCase());
   if (!pact) return null;
   const index = pact.members.findIndex((item) => item.address.toLowerCase() === member.address.toLowerCase());
   if (index >= 0) pact.members[index] = member;
@@ -68,6 +83,6 @@ export async function registerMember(pactId: string, member: AutomationMember) {
   return pact;
 }
 
-export async function findPact(id: string) {
-  return (await readRegistry()).pacts.find((pact) => pact.id === id) ?? null;
+export async function findPact(protocolAddress: Address, id: string) {
+  return (await readProtocolPacts(protocolAddress)).find((pact) => pact.id === id) ?? null;
 }

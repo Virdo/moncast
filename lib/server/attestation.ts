@@ -13,7 +13,7 @@ export async function createCompletionAttestation(input: {
   if (!moncastAddress) throw new Error("CONTRACT_NOT_CONFIGURED");
   const privateKey = process.env.ATTESTOR_PRIVATE_KEY as Hex | undefined;
   if (!privateKey) throw new Error("ATTESTOR_NOT_CONFIGURED");
-  const pact = await findPact(input.pactId);
+  const pact = await findPact(moncastAddress, input.pactId);
   const member = pact?.members.find((item) => item.address.toLowerCase() === input.participant.toLowerCase());
   if (!pact || !member || member.username !== input.username || pact.platform !== input.platform) {
     throw new Error("AUTOMATION_MEMBER_NOT_REGISTERED");

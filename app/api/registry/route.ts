@@ -1,6 +1,6 @@
 import { parseEventLogs, type Address, type Hash } from "viem";
 import { moncastAddress, protocolAbi, publicClient } from "@/lib/moncast-chain";
-import { readRegistry, registerMember, registerPact, type RegisteredPact } from "@/lib/server/registry";
+import { readProtocolPacts, registerMember, registerPact, type RegisteredPact } from "@/lib/server/registry";
 import { validProviderHandle } from "@/lib/provider-verification";
 
 function address(value: unknown): value is Address {
@@ -26,8 +26,9 @@ async function receiptHas(eventName: "PactCreated" | "MemberEnrolled", transacti
 }
 
 export async function GET() {
-  const registry = await readRegistry();
-  return Response.json({ pacts: registry.pacts.map((pact) => Object.fromEntries(Object.entries(pact).filter(([key]) => key !== "inviteCode"))) });
+  if (!moncastAddress) return Response.json({ pacts: [] });
+  const pacts = await readProtocolPacts(moncastAddress);
+  return Response.json({ pacts: pacts.map((pact) => Object.fromEntries(Object.entries(pact).filter(([key]) => key !== "inviteCode"))) });
 }
 
 export async function POST(request: Request) {
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "INVALID_REGISTRATION" }, { status: 400 });
   }
   const pactId = BigInt(String(body.pactId));
+  if (!moncastAddress) return Response.json({ error: "CONTRACT_NOT_CONFIGURED" }, { status: 503 });
 
   if (action === "pact") {
     if (!await receiptHas("PactCreated", body.transactionHash, pactId, body.address)) {
@@ -50,7 +52,7 @@ export async function POST(request: Request) {
       return Response.json({ error: "INVALID_USERNAME" }, { status: 400 });
     }
     const registered: RegisteredPact = {
-      id: String(pactId), creator: body.address, title: String(body.title ?? "未命名契约").slice(0, 48),
+      protocolAddress: moncastAddress, id: String(pactId), creator: body.address, title: String(body.title ?? "未命名契约").slice(0, 48),
       description: String(body.description ?? "").slice(0, 240), platform,
       rule: String(body.rule ?? "").slice(0, 160), durationDays: Number(body.durationDays) as 7 | 14 | 30,
       recruitmentDays: Math.min(7, Math.max(1, Number(body.recruitmentDays))),
@@ -68,7 +70,7 @@ export async function POST(request: Request) {
     if (!await receiptHas("MemberEnrolled", body.transactionHash, pactId, body.address)) {
       return Response.json({ error: "MEMBER_EVENT_NOT_FOUND" }, { status: 400 });
     }
-    const pact = await registerMember(String(pactId), { address: body.address, username: body.username, joinedTx: body.transactionHash });
+    const pact = await registerMember(moncastAddress, String(pactId), { address: body.address, username: body.username, joinedTx: body.transactionHash });
     return pact ? Response.json({ registered: true }) : Response.json({ error: "PACT_NOT_FOUND" }, { status: 404 });
   }
   return Response.json({ error: "INVALID_ACTION" }, { status: 400 });

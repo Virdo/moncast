@@ -11,12 +11,12 @@ export async function POST(request: Request) {
   if (!/^\d+$/.test(pactId) || !/^0x[a-fA-F0-9]{40}$/.test(participant) || typeof body.code !== "string") {
     return Response.json({ error: "INVALID_INVITE_REQUEST" }, { status: 400 });
   }
-  const pact = await findPact(pactId);
+  const privateKey = process.env.ATTESTOR_PRIVATE_KEY as Hex | undefined;
+  if (!privateKey || !moncastAddress) return Response.json({ error: "INVITE_SIGNER_NOT_CONFIGURED" }, { status: 503 });
+  const pact = await findPact(moncastAddress, pactId);
   if (!pact?.isPrivate || !pact.inviteCode || pact.inviteCode !== body.code || Date.now() / 1000 >= pact.recruitmentEndsAt) {
     return Response.json({ error: "INVITE_INVALID_OR_EXPIRED" }, { status: 404 });
   }
-  const privateKey = process.env.ATTESTOR_PRIVATE_KEY as Hex | undefined;
-  if (!privateKey || !moncastAddress) return Response.json({ error: "INVITE_SIGNER_NOT_CONFIGURED" }, { status: 503 });
 
   const nonce = BigInt(`0x${randomBytes(32).toString("hex")}`);
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 15 * 60);

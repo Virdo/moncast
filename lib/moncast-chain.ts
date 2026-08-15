@@ -65,17 +65,24 @@ export const publicClient = createPublicClient({ chain: monadTestnet, transport:
 
 export async function assertEarlyStartSupport() {
   if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
+  let version: number;
   try {
-    const version = await publicClient.readContract({
+    version = Number(await publicClient.readContract({
       address: moncastAddress,
       abi: protocolAbi,
       functionName: "PROTOCOL_VERSION",
-      blockTag: "safe",
-    });
-    if (version < 2) throw new Error("OUTDATED_PROTOCOL");
-  } catch {
+      blockTag: "latest",
+    }));
+  } catch (cause) {
+    const detail = cause instanceof Error
+      ? ("shortMessage" in cause && typeof cause.shortMessage === "string" ? cause.shortMessage : cause.message)
+      : "未知 RPC 错误";
+    throw new Error(`无法读取当前 Moncast 协议版本（${moncastAddress}）。请检查 RPC 与本地环境配置：${detail}`);
+  }
+  if (version < 2) {
     throw new Error("当前契约属于旧版主协议，不支持立即开始。请部署新版主协议后重新发起契约；旧契约仍可等待招募结束后自动签订。");
   }
+  return version;
 }
 
 export type InjectedProvider = EIP1193Provider & {
