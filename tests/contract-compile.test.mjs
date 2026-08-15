@@ -47,6 +47,7 @@ test("Moncast contracts compile and expose recruitment, completion and settlemen
     protocol.abi.filter((entry) => entry.type === "function").map((entry) => entry.name),
   );
   for (const name of [
+    "PROTOCOL_VERSION",
     "createPact",
     "joinPact",
     "activateMembers",

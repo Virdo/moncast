@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { encodeDeployData, type Abi, type Address, type Hex } from "viem";
-import { collateralTokenAbi, publicClient, verifierAddress, walletClient, switchToMonadTestnet, type InjectedProvider } from "@/lib/moncast-chain";
+import { collateralTokenAbi, publicClient, verifierAddress, walletClient, type InjectedProvider } from "@/lib/moncast-chain";
+import { useMoncastWallet } from "@/lib/use-moncast-wallet";
 
 type Artifact = { abi: Abi; bytecode: Hex };
 type ArtifactSet = { AttestedProofVerifier: Artifact; MoncastProtocol: Artifact };
 
 export default function DeployPage() {
-  const [account, setAccount] = useState<Address>();
   const [attestor, setAttestor] = useState(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS ?? "");
   const [collateral, setCollateral] = useState(process.env.NEXT_PUBLIC_USDC_ADDRESS ?? "");
   const [verifier, setVerifier] = useState(verifierAddress ?? "");
@@ -18,14 +18,7 @@ export default function DeployPage() {
     verifier: verifierAddress,
   });
   const [busy, setBusy] = useState(false);
-
-  async function connect() {
-    const provider = window.ethereum as InjectedProvider | undefined;
-    if (!provider) throw new Error("未检测到浏览器钱包");
-    const accounts = await provider.request({ method: "eth_requestAccounts" }) as Address[];
-    await switchToMonadTestnet(provider);
-    setAccount(accounts[0]);
-  }
+  const wallet = useMoncastWallet(setStatus);
 
   async function deployContract(provider: InjectedProvider, owner: Address, artifact: Artifact, args: readonly unknown[] = []) {
     const data = encodeDeployData({ abi: artifact.abi, bytecode: artifact.bytecode, args });
@@ -37,8 +30,8 @@ export default function DeployPage() {
   }
 
   async function deployAll() {
-    const provider = window.ethereum as InjectedProvider | undefined;
-    const owner = account;
+    const provider = wallet.provider;
+    const owner = wallet.account;
     if (!provider || !owner) throw new Error("请先连接钱包");
     if (!/^0x[a-fA-F0-9]{40}$/.test(attestor)) throw new Error("Attestor 地址无效");
     if (!/^0x[a-fA-F0-9]{40}$/.test(collateral)) throw new Error("测试网 USDC 合约地址无效");
@@ -71,8 +64,8 @@ export default function DeployPage() {
   }
 
   async function deployProtocolOnly() {
-    const provider = window.ethereum as InjectedProvider | undefined;
-    const owner = account;
+    const provider = wallet.provider;
+    const owner = wallet.account;
     if (!provider || !owner) throw new Error("请先连接钱包");
     if (!/^0x[a-fA-F0-9]{40}$/.test(collateral)) throw new Error("测试网 USDC 合约地址无效");
     if (!/^0x[a-fA-F0-9]{40}$/.test(verifier)) throw new Error("Verifier 地址无效");
@@ -110,9 +103,9 @@ export default function DeployPage() {
     <label>Attestor address<input value={attestor} onChange={(event) => setAttestor(event.target.value)} /></label>
     <label>Existing verifier address<input value={verifier} onChange={(event) => setVerifier(event.target.value)} /></label>
     <div className="deploy-actions">
-      <button className="button outline" onClick={() => void connect()}>{account ? `${account.slice(0, 7)}…${account.slice(-5)}` : "连接部署钱包"}</button>
-      <button className="button primary" onClick={() => void deployAll()} disabled={!account || busy}>{busy ? "部署中" : "部署 Moncast"}</button>
-      <button className="button primary" onClick={() => void deployProtocolOnly()} disabled={!account || busy}>{busy ? "部署中" : "仅更新主协议"}</button>
+      <button className="button outline" onClick={() => { void (wallet.account ? wallet.disconnect() : wallet.connect()); }}>{wallet.account ? `退出 ${wallet.account.slice(0, 7)}…${wallet.account.slice(-5)}` : "连接部署钱包"}</button>
+      <button className="button primary" onClick={() => void deployAll()} disabled={!wallet.account || busy}>{busy ? "部署中" : "部署 Moncast"}</button>
+      <button className="button primary" onClick={() => void deployProtocolOnly()} disabled={!wallet.account || busy}>{busy ? "部署中" : "仅更新主协议"}</button>
     </div>
     <dl>
       <div><dt>USDC</dt><dd>{addresses.usdc ?? "WAITING"}</dd></div>

@@ -14,6 +14,7 @@ import { pacts, type GoalType, type PactLifecycle, type PactSummary, type ViewNa
 import {
   collateralTokenAbi,
   collateralTokenAddress,
+  assertEarlyStartSupport,
   commitmentHash,
   inviteAuthorityAddress,
   moncastAddress,
@@ -224,6 +225,7 @@ export default function Home() {
     if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
     if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
     if (!pact.isCreator) throw new Error("只有契约发起人可以立即开始。");
+    await assertEarlyStartSupport();
     setStartingPactId(pact.id);
     setToast("请确认立即开始交易；确认后停止招募并划转当前成员保证金");
     try {
@@ -250,7 +252,7 @@ export default function Home() {
   }, [toast]);
 
   return (
-    <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} contractsReady={Boolean(moncastAddress && collateralTokenAddress)} onWallet={() => { void wallet.connect(); }}>
+    <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} contractsReady={Boolean(moncastAddress && collateralTokenAddress)} onWallet={() => { void wallet.connect(); }} onDisconnect={() => { void wallet.disconnect(); }}>
       {view === "plaza" && <PlazaView livePacts={livePacts} onJoin={(pact) => { setJoinCode(pact.isPrivate ? "" : "OPEN"); setJoinPact(pact); }} onFormulate={() => navigate("formulate")} />}
       {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} startingPactId={startingPactId} onCheckIn={setCheckInPact} onStartNow={startPactNow} onFormulate={() => navigate("formulate")} />}
       {view === "formulate" && <FormulateView onLaunch={launchPact} />}

@@ -11,12 +11,13 @@ const navigation: Array<{ id: ViewName; label: string; en: string; icon: IconNam
   { id: "manifesto", label: "协议说明", en: "How it works", icon: "terminal" },
 ];
 
-export function AppShell({ view, onNavigate, wallet, contractsReady, onWallet, children }: {
+export function AppShell({ view, onNavigate, wallet, contractsReady, onWallet, onDisconnect, children }: {
   view: ViewName;
   onNavigate: (view: ViewName) => void;
   wallet: string;
   contractsReady: boolean;
   onWallet: () => void;
+  onDisconnect: () => void;
   children: ReactNode;
 }) {
   return (
@@ -38,15 +39,18 @@ export function AppShell({ view, onNavigate, wallet, contractsReady, onWallet, c
         </nav>
         <div className="sidebar-foot">
           <span className="network-pulse"><i /> MONAD TESTNET · 10143</span>
-          <button className="wallet-control" onClick={onWallet}>
-            <Icon name="wallet" />
-            <span>{wallet || "连接个人钱包"}<small>{wallet ? contractsReady ? "已连接 · Monad 测试网" : "已连接 · 合约待配置" : "测试币请从官方水龙头领取"}</small></span>
-          </button>
+          <div className="wallet-actions">
+            <button className="wallet-control" onClick={onWallet}>
+              <Icon name="wallet" />
+              <span>{wallet || "连接个人钱包"}<small>{wallet ? contractsReady ? "已连接 · Monad 测试网" : "已连接 · 合约待配置" : "测试币请从官方水龙头领取"}</small></span>
+            </button>
+            {wallet && <button className="wallet-disconnect" onClick={onDisconnect}><Icon name="close" />退出当前钱包</button>}
+          </div>
         </div>
       </aside>
       <header className="mobile-header">
         <button className="mobile-brand" onClick={() => onNavigate("plaza")} aria-label="返回契约广场"><Image className="brand-logo" src="/moncast-mark.svg" alt="" width={32} height={32} priority />MONCAST</button>
-        <button className="icon-button" onClick={onWallet} aria-label="连接钱包"><Icon name="wallet" /></button>
+        <button className="icon-button" onClick={wallet ? onDisconnect : onWallet} aria-label={wallet ? "退出当前钱包" : "连接钱包"}><Icon name={wallet ? "close" : "wallet"} /></button>
       </header>
       <main className="main-canvas">{children}</main>
       <nav className="mobile-nav" aria-label="移动端主导航">

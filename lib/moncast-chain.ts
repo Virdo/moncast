@@ -25,6 +25,7 @@ export const monadTestnet = defineChain({
 });
 
 export const protocolAbi = parseAbi([
+  "function PROTOCOL_VERSION() view returns (uint16)",
   "function createPact((bytes32 metadataHash,bytes32 ruleHash,address inviteAuthority,uint8 durationDays,uint40 recruitmentDuration,uint128 stakeAmount,uint16 maxMembers,int16 utcOffsetMinutes,bool isPrivate) config) returns (uint256 pactId)",
   "function joinPact(uint256 pactId,uint256 inviteNonce,uint256 inviteDeadline,bytes inviteSignature)",
   "function activateMembers(uint256 pactId,uint16 limit)",
@@ -61,6 +62,21 @@ export const verifierAddress = configuredAddress(process.env.NEXT_PUBLIC_VERIFIE
 export const inviteAuthorityAddress = configuredAddress(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS);
 
 export const publicClient = createPublicClient({ chain: monadTestnet, transport: http(monadTestnet.rpcUrls.default.http[0]) });
+
+export async function assertEarlyStartSupport() {
+  if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
+  try {
+    const version = await publicClient.readContract({
+      address: moncastAddress,
+      abi: protocolAbi,
+      functionName: "PROTOCOL_VERSION",
+      blockTag: "safe",
+    });
+    if (version < 2) throw new Error("OUTDATED_PROTOCOL");
+  } catch {
+    throw new Error("当前契约属于旧版主协议，不支持立即开始。请部署新版主协议后重新发起契约；旧契约仍可等待招募结束后自动签订。");
+  }
+}
 
 export type InjectedProvider = EIP1193Provider & {
   on?: (event: string, listener: (...args: unknown[]) => void) => void;

@@ -60,6 +60,10 @@ svg { width: 20px; height: 20px; flex: 0 0 auto; }
 .wallet-control svg { color: var(--blue-soft); }
 .wallet-control span { font-size: 11px; font-weight: 700; }
 .wallet-control small { display: block; margin-top: 4px; color: var(--muted); font: 8px var(--mono); }
+.wallet-actions { display: grid; gap: 8px; }
+.wallet-disconnect { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.09); background: transparent; color: var(--muted); font: 700 9px var(--mono); cursor: pointer; }
+.wallet-disconnect:hover { border-color: #ff6d6d; color: #ff8b8b; }
+.wallet-disconnect svg { width: 13px; height: 13px; }
 .main-canvas { min-height: 100vh; margin-left: 264px; overflow: hidden; }
 .view { position: relative; width: min(100%, 1480px); margin: 0 auto; padding: 58px 62px 100px; }
 .view::before { content: ""; position: absolute; top: 0; right: -20%; width: 70%; height: 420px; pointer-events: none; background: radial-gradient(circle at 50% 0, rgba(46,91,255,.09), transparent 65%); }

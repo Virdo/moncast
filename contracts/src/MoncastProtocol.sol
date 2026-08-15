@@ -15,6 +15,7 @@ import {ICommitmentVerifier} from "./ICommitmentVerifier.sol";
 contract MoncastProtocol is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
+    uint16 public constant PROTOCOL_VERSION = 2;
     uint40 public constant MIN_RECRUITMENT = 1 hours;
     uint40 public constant MAX_RECRUITMENT = 7 days;
     uint40 public constant COMPLETION_GRACE = 48 hours;
