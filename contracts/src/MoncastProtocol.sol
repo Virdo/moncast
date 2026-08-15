@@ -15,7 +15,7 @@ import {ICommitmentVerifier} from "./ICommitmentVerifier.sol";
 contract MoncastProtocol is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
-    uint16 public constant PROTOCOL_VERSION = 3;
+    uint16 public constant PROTOCOL_VERSION = 4;
     uint40 public constant MIN_RECRUITMENT = 1 hours;
     uint40 public constant MAX_RECRUITMENT = 7 days;
     uint40 public constant COMPLETION_GRACE = 48 hours;
@@ -116,7 +116,6 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     error RecruitmentClosed();
     error RecruitmentStillOpen();
     error NotPactCreator();
-    error NotEnoughMembers();
     error PactFull();
     error AlreadyMember();
     error InvalidInvite();
@@ -286,8 +285,6 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         if (pact.status != PactStatus.Recruiting || block.timestamp >= pact.recruitmentEndsAt) {
             revert RecruitmentClosed();
         }
-        if (pact.memberCount < 2) revert NotEnoughMembers();
-
         uint40 scheduledEndsAt = pact.recruitmentEndsAt;
         pact.recruitmentEndsAt = uint40(block.timestamp);
         pact.status = PactStatus.Activating;
@@ -472,7 +469,9 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     }
 
     function _finishActivation(uint256 pactId, Pact storage pact) private {
-        if (pact.fundedCount < 2) {
+        // Demo-friendly solo pacts are valid. Cancellation is reserved for the
+        // case where no enrolled wallet can fund its approved collateral.
+        if (pact.fundedCount == 0) {
             pact.status = PactStatus.Cancelled;
             emit PactCancelled(pactId, pact.fundedCount);
             return;

@@ -67,7 +67,7 @@ export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn,
                   </div>
                   <div className="commitment-action">
                     <span><Icon name="shield" /> {lifecycleText[pact.lifecycle]}</span>
-                    {canStartNow && <button className="button primary" title={pact.members < 2 ? "至少需要 2 名成员" : undefined} disabled={Boolean(startingPactId) || pact.members < 2} onClick={() => void onStartNow(pact)}>{starting ? "开始中" : "立即开始"}</button>}
+                    {canStartNow && <button className="button primary" disabled={Boolean(startingPactId)} onClick={() => void onStartNow(pact)}>{starting ? "开始中" : "立即开始"}</button>}
                     {needsAccount && <button className="button outline" onClick={() => void onBindAccount(pact)}>恢复验真账号</button>}
                     {executable && <button className={checked ? "button ghost" : "button primary"} onClick={() => onCheckIn(pact)}>{checked ? "查看证明" : "完成契约"}</button>}
                   </div>

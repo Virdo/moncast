@@ -73,8 +73,8 @@ export const publicClient = createPublicClient({ chain: monadTestnet, transport:
 
 export async function assertEarlyStartSupport() {
   const version = await readProtocolVersion();
-  if (version < 2) {
-    throw new Error("当前契约属于旧版主协议，不支持立即开始。请部署新版主协议后重新发起契约；旧契约仍可等待招募结束后自动签订。");
+  if (version < 4) {
+    throw new Error("当前契约属于旧版主协议，不支持单人立即开始。请在 MoncastProtocol v4 部署后重新发起契约；旧契约无法迁移其链上状态。");
   }
   return version;
 }

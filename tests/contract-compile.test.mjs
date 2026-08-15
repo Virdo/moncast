@@ -35,6 +35,13 @@ const input = {
   },
 };
 
+test("v4 permits a funded solo pact to start immediately", () => {
+  const source = readFileSync(resolve(root, "contracts/src/MoncastProtocol.sol"), "utf8");
+  assert.match(source, /PROTOCOL_VERSION\s*=\s*4/);
+  assert.doesNotMatch(source, /memberCount\s*<\s*2/);
+  assert.match(source, /fundedCount\s*==\s*0/);
+});
+
 test("Moncast contracts compile and expose recruitment, completion and settlement", () => {
   const output = JSON.parse(solc.compile(JSON.stringify(input), { import: findImport }));
   const errors = (output.errors ?? []).filter((entry) => entry.severity === "error");
