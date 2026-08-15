@@ -15,8 +15,11 @@ export async function createCompletionAttestation(input: {
   username: string;
 }) {
   if (!moncastAddress) throw new Error("CONTRACT_NOT_CONFIGURED");
-  const privateKey = process.env.ATTESTOR_PRIVATE_KEY as Hex | undefined;
-  if (!privateKey) throw new Error("ATTESTOR_NOT_CONFIGURED");
+  const configuredPrivateKey = process.env.ATTESTOR_PRIVATE_KEY;
+  if (!configuredPrivateKey || !/^0x[a-fA-F0-9]{64}$/.test(configuredPrivateKey)) {
+    throw new Error("ATTESTOR_NOT_CONFIGURED");
+  }
+  const privateKey = configuredPrivateKey as Hex;
   const [[epoch, completionOpen], pactState, memberState] = await Promise.all([
     publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "currentEpoch", args: [BigInt(input.pactId)], blockTag: "safe" }),
     publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "pacts", args: [BigInt(input.pactId)], blockTag: "safe" }),

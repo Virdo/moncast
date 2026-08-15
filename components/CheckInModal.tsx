@@ -26,6 +26,7 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
 }) {
   const [phase, setPhase] = useState<"idle" | "running" | "success" | "failed">(alreadyCompleted ? "success" : "idle");
   const [step, setStep] = useState(-1);
+  const [failureCode, setFailureCode] = useState("");
   const [failureReason, setFailureReason] = useState("");
   const [transactionHash, setTransactionHash] = useState<Hex>();
   const [gasLimit, setGasLimit] = useState<bigint>();
@@ -39,27 +40,32 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
     const participant = account ?? await onWallet();
     const injected = provider ?? window.ethereum;
     if (!participant) {
+      setFailureCode("WALLET_NOT_CONNECTED");
       setFailureReason("个人钱包尚未连接。请先连接钱包并切换到 Monad 测试网。");
       setPhase("failed");
       return;
     }
     if (!injected) {
+      setFailureCode("WALLET_PROVIDER_MISSING");
       setFailureReason("未检测到当前钱包提供方，请刷新页面后重新连接。");
       setPhase("failed");
       return;
     }
     if (!moncastAddress) {
+      setFailureCode("CONTRACT_NOT_CONFIGURED");
       setFailureReason("Moncast 测试网协议地址未配置。请先完成合约部署并写入 NEXT_PUBLIC_MONCAST_CONTRACT_ADDRESS。");
       setPhase("failed");
       return;
     }
     if (!pact.username || pact.goalType === "custom") {
+      setFailureCode("PROFILE_NOT_BOUND");
       setFailureReason("这张示例契约没有已登记的平台账号；真实链上契约会在加入时完成账号绑定。");
       setPhase("failed");
       return;
     }
     setPhase("running");
     setStep(0);
+    setFailureCode("");
     setFailureReason("");
     try {
       await new Promise((resolve) => window.setTimeout(resolve, 360));
@@ -96,13 +102,17 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
         COMPLETION_WINDOW_CLOSED: "该契约当前不在执行期，不能提交完成证明。",
         PROFILE_NOT_FOUND: "未找到已绑定的平台公开账号。",
       };
+      setFailureCode(code);
       setFailureReason(readable[code] ?? code);
       setPhase(code === "ALREADY_COMPLETED" ? "success" : "failed");
     }
   }
 
+  const targetNotCompleted = failureCode === "TARGET_NOT_COMPLETED";
+  const failedTitle = targetNotCompleted ? "今日尚未达标" : "验真暂未完成";
+
   return (
-    <Modal title={phase === "success" ? "今日契约已完成" : phase === "failed" ? "今日尚未达标" : "ZK-TLS 隐私验真"} eyebrow={`COMPLETE / PACT #${pact.id}`} onClose={onClose} width="regular">
+    <Modal title={phase === "success" ? "今日契约已完成" : phase === "failed" ? failedTitle : "ZK-TLS 隐私验真"} eyebrow={`COMPLETE / PACT #${pact.id}`} onClose={onClose} width="regular">
       <div className={`proof-console phase-${phase}`}>
         {phase === "success" && !alreadyCompleted && <div className="confetti" aria-hidden="true">{confetti.map((piece, index) => <i key={index} data-color={piece.color} style={{ left: `${piece.x}%`, animationDelay: `${piece.delay}s`, transform: `rotate(${piece.rotate}deg)` }} />)}</div>}
         <div className="proof-target"><span className="icon-frame"><Icon name={pact.goalType === "leetcode" ? "code" : pact.goalType === "duolingo" ? "owl" : "settings"} /></span><div><strong>{pact.title}</strong><small>{pact.rule}</small></div><span className="status-tag status-proving">AUTO · 23:00</span></div>
@@ -113,7 +123,7 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
           <header><span><i /> zk-tls-session.log</span><code>PACT 0x{pact.id}</code></header>
           <div className="log-lines">
             {proofSteps.map(([label, state], index) => <div key={state} className={index < step ? "done" : index === step ? "active" : "pending"}><span>{String(index + 1).padStart(2, "0")}</span><i /> <strong>{label}</strong><code>{index < step ? "OK" : index === step ? state : "WAITING"}</code></div>)}
-            {phase === "failed" && <div className="failure-log"><span>RULE_RESULT</span><strong>FALSE</strong><code>NOT_BROADCAST</code></div>}
+            {phase === "failed" && <div className="failure-log"><span>{targetNotCompleted ? "RULE_RESULT" : "SERVICE_RESULT"}</span><strong>{targetNotCompleted ? "FALSE" : "ERROR"}</strong><code>{failureCode || "NOT_BROADCAST"}</code></div>}
           </div>
           <div className="proof-progress"><i style={{ width: `${Math.max(8, ((step + 1) / proofSteps.length) * 100)}%` }} /></div>
         </div>}
@@ -126,7 +136,8 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
           {phase === "idle" && <button className="button primary full" onClick={startProof}>完成契约<Icon name="spark" /></button>}
           {phase === "running" && <button className="button primary full" disabled>正在验真<span className="loading-dots">•••</span></button>}
           {phase === "success" && <button className="button primary full" onClick={onClose}>查看完成<Icon name="check" /></button>}
-          {phase === "failed" && <a className="button primary full" href={platformUrl} target="_blank" rel="noreferrer">前往完成目标<Icon name="external" /></a>}
+          {phase === "failed" && targetNotCompleted && <a className="button primary full" href={platformUrl} target="_blank" rel="noreferrer">前往完成目标<Icon name="external" /></a>}
+          {phase === "failed" && !targetNotCompleted && <button className="button primary full" onClick={startProof}>重新验真<Icon name="spark" /></button>}
           <p><Icon name="lock" />Moncast cannot read your provider password or private TLS keys.</p>
         </footer>
       </div>
