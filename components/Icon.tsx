@@ -4,7 +4,7 @@ export type IconName =
   | "plaza" | "check" | "plus" | "terminal" | "wallet" | "search" | "key"
   | "lock" | "code" | "owl" | "settings" | "users" | "clock" | "pool"
   | "trend" | "copy" | "arrow" | "shield" | "spark" | "close" | "globe"
-  | "link" | "activity" | "external" | "menu" | "warning" | "chevron";
+  | "link" | "activity" | "external" | "menu" | "warning" | "chevron" | "anchor";
 
 const paths: Record<IconName, React.ReactNode> = {
   plaza: <><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="7" r="2.4"/><circle cx="12" cy="17" r="2.4"/><path d="M8.9 8.5l2 6M15.1 8.5l-2 6M9.3 7h5.4"/></>,
@@ -34,6 +34,7 @@ const paths: Record<IconName, React.ReactNode> = {
   menu: <path d="M3 6h18M3 12h18M3 18h18"/>,
   warning: <><path d="M12 3L2 21h20z"/><path d="M12 9v5M12 18h.01"/></>,
   chevron: <path d="M8 10l4 4 4-4"/>,
+  anchor: <><circle cx="12" cy="5" r="2.5"/><path d="M12 7.5V21M5 12H2M22 12h-3M4 12c0 5 3.6 9 8 9s8-4 8-9M8 17l-4 4M16 17l4 4"/></>,
 };
 
 export function Icon({ name, ...props }: { name: IconName } & SVGProps<SVGSVGElement>) {

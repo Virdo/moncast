@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import type { ViewName } from "@/lib/pacts";
 import { Icon, type IconName } from "./Icon";
 
@@ -10,10 +11,11 @@ const navigation: Array<{ id: ViewName; label: string; en: string; icon: IconNam
   { id: "manifesto", label: "协议说明", en: "How it works", icon: "terminal" },
 ];
 
-export function AppShell({ view, onNavigate, wallet, onWallet, children }: {
+export function AppShell({ view, onNavigate, wallet, contractsReady, onWallet, children }: {
   view: ViewName;
   onNavigate: (view: ViewName) => void;
   wallet: string;
+  contractsReady: boolean;
   onWallet: () => void;
   children: ReactNode;
 }) {
@@ -22,7 +24,7 @@ export function AppShell({ view, onNavigate, wallet, onWallet, children }: {
       <aside className="sidebar">
         <div className="brand-block">
           <div className="brand-lockup">
-            <span className="brand-mark" aria-hidden="true"><i /><i /><i /><i /><i /><i /></span>
+            <Image className="brand-logo" src="/moncast-mark.svg" alt="" width={44} height={44} priority />
             <div><strong>MONCAST</strong><small>ONCHAIN COMMITMENT PROTOCOL</small></div>
           </div>
           <button className="button primary full launch-pact" onClick={() => onNavigate("formulate")}><Icon name="plus" />发起契约</button>
@@ -38,12 +40,12 @@ export function AppShell({ view, onNavigate, wallet, onWallet, children }: {
           <span className="network-pulse"><i /> MONAD TESTNET · 10143</span>
           <button className="wallet-control" onClick={onWallet}>
             <Icon name="wallet" />
-            <span>{wallet || "连接钱包 · 领 1000 U"}<small>{wallet ? "已连接 · Monad 测试网" : "个人钱包 · 真实链上测试"}</small></span>
+            <span>{wallet || "连接个人钱包"}<small>{wallet ? contractsReady ? "已连接 · Monad 测试网" : "已连接 · 合约待配置" : "测试币请从官方水龙头领取"}</small></span>
           </button>
         </div>
       </aside>
       <header className="mobile-header">
-        <button className="mobile-brand" onClick={() => onNavigate("plaza")} aria-label="返回契约广场"><span className="brand-mark"><i /><i /><i /><i /></span>MONCAST</button>
+        <button className="mobile-brand" onClick={() => onNavigate("plaza")} aria-label="返回契约广场"><Image className="brand-logo" src="/moncast-mark.svg" alt="" width={32} height={32} priority />MONCAST</button>
         <button className="icon-button" onClick={onWallet} aria-label="连接钱包"><Icon name="wallet" /></button>
       </header>
       <main className="main-canvas">{children}</main>

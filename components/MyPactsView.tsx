@@ -1,77 +1,93 @@
 "use client";
 
-import { heatmap, pacts, type PactSummary } from "@/lib/pacts";
+import type { PactLifecycle, PactSummary } from "@/lib/pacts";
 import { Icon } from "./Icon";
 
-export function MyPactsView({ pacts: registeredPacts = [], checkedIds, rewardClaimed, onCheckIn, onClaim }: {
+const lifecycleText: Record<PactLifecycle, string> = {
+  recruiting: "RECRUITING",
+  activating: "SIGNING",
+  active: "EXECUTING",
+  cancelled: "CANCELLED",
+  finalized: "FINALIZED",
+  unknown: "SYNCING",
+};
+
+export function MyPactsView({ pacts = [], checkedIds, onCheckIn, onFormulate }: {
   pacts?: PactSummary[];
   checkedIds: Set<string>;
-  rewardClaimed: boolean;
   onCheckIn: (pact: PactSummary) => void;
-  onClaim: () => void;
+  onFormulate: () => void;
 }) {
-  const cells = heatmap(11, 98);
-  const completed = checkedIds.size > 0;
-  const activePacts = registeredPacts.length ? registeredPacts : [{ ...pacts[0], recruiting: false }, { ...pacts[1], recruiting: false }];
+  const activePacts = pacts.filter((pact) => pact.lifecycle === "active");
+  const bonded = activePacts.reduce((total, pact) => total + pact.stake, 0);
+  const completedToday = activePacts.filter((pact) => checkedIds.has(pact.id)).length;
 
   return (
     <div className="view mine-view">
       <header className="page-heading compact-heading">
-        <div><span className="eyebrow">MY PACTS / 个人执行终端</span><h1>我的契约</h1><p>系统会在每日 23:00–24:00 自动核验；原始学习数据不上链。</p></div>
-        <button className="button primary" disabled={activePacts[0].recruiting} onClick={() => onCheckIn(activePacts[0])}>{activePacts[0].recruiting ? "等待签约" : completed ? "查看证明" : "完成契约"}<Icon name={completed ? "shield" : "spark"} /></button>
+        <div><span className="eyebrow">MY PACTS / 个人执行终端</span><h1>我的契约</h1><p>这里只展示当前钱包真实发起或加入的契约；完成入口仅在契约进入执行期后出现。</p></div>
       </header>
 
       <section className="system-strip">
-        <div><span>ACTIVE PACTS</span><strong>{String(activePacts.length).padStart(2, "0")}</strong><small>{registeredPacts.length ? "链上契约" : "界面示例"}</small></div>
-        <div><span>STREAK</span><strong>{completed ? "13" : "12"}<i>D</i></strong><small>最佳纪录 31 天</small></div>
-        <div><span>BONDED</span><strong>150<i>USDC</i></strong><small>本金安全锁定</small></div>
-        <div className="reward-stat"><span>本队分润</span><strong>--<i>USDC</i></strong><small>周期结束后按链上结果计算</small></div>
+        <div><span>MY PACTS</span><strong>{String(pacts.length).padStart(2, "0")}</strong><small>当前钱包真实契约</small></div>
+        <div><span>EXECUTING</span><strong>{String(activePacts.length).padStart(2, "0")}</strong><small>可提交今日证明</small></div>
+        <div><span>BONDED</span><strong>{bonded}<i>USDC</i></strong><small>执行中保证金</small></div>
+        <div className="reward-stat"><span>TODAY VERIFIED</span><strong>{completedToday}<i>PACT</i></strong><small>本日链上证明</small></div>
       </section>
 
-      <div className="dashboard-grid">
-        <section className="active-list">
-          <div className="section-title-row"><div><span className="eyebrow">ACTIVE COMMITMENTS</span><h2>执行中的契约</h2></div><span>{String(activePacts.length).padStart(2, "0")}</span></div>
-          {activePacts.map((pact, index) => {
-            const checked = checkedIds.has(pact.id);
-            return (
-              <article className="commitment-row" key={pact.id}>
-                <div className="commitment-index">0{index + 1}</div>
-                <div className="commitment-main">
-                  <span className="mini-status"><i className={checked ? "ok" : ""} />{pact.recruiting ? `RECRUITING · ${pact.recruitmentLabel}` : checked ? "TODAY VERIFIED" : "AUTO CHECK · 23:00"}</span>
-                  <h3>{pact.title}</h3>
-                  <p>{pact.rule}</p>
-                  <div className="thin-progress"><i style={{ width: index ? "29%" : "71%" }} /></div>
-                  <small>DAY {index ? "09" : "10"} / {pact.durationDays} · {pact.stake} USDC BONDED</small>
-                </div>
-                <div className="commitment-action">
-                  <span><Icon name="shield" /> ZK-TLS</span>
-                  <button className={checked ? "button ghost" : "button primary"} disabled={pact.recruiting} onClick={() => onCheckIn(pact)}>{pact.recruiting ? "等待签约" : checked ? "查看证明" : "完成契约"}</button>
-                </div>
-              </article>
-            );
-          })}
+      {!pacts.length ? (
+        <section className="mine-empty empty-state">
+          <Icon name="anchor" />
+          <h3>还没有真实契约</h3>
+          <p>广场内容仅作展示。发起或加入一份链上契约后，它会出现在这里。</p>
+          <button className="button primary" onClick={onFormulate}>发起契约<Icon name="arrow" /></button>
         </section>
+      ) : (
+        <div className="dashboard-grid">
+          <section className="active-list">
+            <div className="section-title-row"><div><span className="eyebrow">ONCHAIN COMMITMENTS</span><h2>我的链上契约</h2></div><span>{String(pacts.length).padStart(2, "0")}</span></div>
+            {pacts.map((pact, index) => {
+              const checked = checkedIds.has(pact.id);
+              const executable = pact.lifecycle === "active";
+              return (
+                <article className="commitment-row" key={pact.id}>
+                  <div className="commitment-index">{String(index + 1).padStart(2, "0")}</div>
+                  <div className="commitment-main">
+                    <span className="mini-status"><i className={checked ? "ok" : ""} />{checked ? "TODAY VERIFIED" : lifecycleText[pact.lifecycle]}{pact.recruiting ? ` · ${pact.recruitmentLabel}` : ""}</span>
+                    <h3>{pact.title}</h3>
+                    <p>{pact.rule}</p>
+                    <div className="thin-progress"><i style={{ width: checked ? "100%" : executable ? "45%" : "12%" }} /></div>
+                    <small>PACT #{pact.id} · {pact.durationDays} DAYS · {pact.stake} USDC</small>
+                  </div>
+                  <div className="commitment-action">
+                    <span><Icon name="shield" /> {lifecycleText[pact.lifecycle]}</span>
+                    {executable && <button className={checked ? "button ghost" : "button primary"} onClick={() => onCheckIn(pact)}>{checked ? "查看证明" : "完成契约"}</button>}
+                  </div>
+                </article>
+              );
+            })}
+          </section>
 
-        <aside className="settlement-panel">
-          <header><span className="eyebrow">SETTLEMENT PREVIEW</span><h2>战利品结算</h2></header>
-          <div className="vault-visual"><div className="vault-ring ring-a" /><div className="vault-ring ring-b" /><span><Icon name="pool" /></span><strong>{rewardClaimed ? "CLAIMED" : "PENDING"}</strong><small>SETTLEMENT</small></div>
-          <dl>
-            <div><dt>本金返还</dt><dd>100 USDC</dd></div>
-            <div><dt>战友违约分润</dt><dd className="lime">+8.24 USDC</dd></div>
-            <div><dt>赞助收益</dt><dd className="blue">+1.76 USDC</dd></div>
-          </dl>
-          <button className="button primary full" onClick={onClaim} disabled>{rewardClaimed ? "已领取" : "等待结算"}<Icon name="arrow" /></button>
-          <p>分润只来自本契约实际罚没与已注入收益，不承诺固定回报。</p>
-        </aside>
+          <aside className="settlement-panel">
+            <header><span className="eyebrow">SETTLEMENT STATUS</span><h2>链上结算</h2></header>
+            <div className="vault-visual"><div className="vault-ring ring-a" /><div className="vault-ring ring-b" /><span><Icon name="pool" /></span><strong>PENDING</strong><small>NO ESTIMATED RETURNS</small></div>
+            <dl>
+              <div><dt>执行中本金</dt><dd>{bonded} USDC</dd></div>
+              <div><dt>战友违约分润</dt><dd className="lime">链上待定</dd></div>
+              <div><dt>可领取</dt><dd className="blue">0 USDC</dd></div>
+            </dl>
+            <button className="button primary full" disabled>等待结算<Icon name="arrow" /></button>
+            <p>不展示模拟收益；周期结束后按同契约实际罚没与验证结果计算。</p>
+          </aside>
 
-        <section className="heatmap-panel">
-          <div className="heatmap-head"><div><span className="eyebrow">PROOF HEATMAP</span><h2>连续履约热力图</h2></div><div className="legend"><span>少</span>{[0, 1, 2, 3].map((level) => <i key={level} data-level={level} />)}<span>多</span></div></div>
-          <div className="heatmap-grid" aria-label="最近 14 周履约热力图">
-            {cells.map((level, index) => <i key={index} data-level={completed && index === cells.length - 1 ? 3 : level} title={`第 ${index + 1} 日 · ${level ? "已证明" : "无记录"}`} />)}
-          </div>
-          <footer><span>98 DAYS OBSERVED</span><span>92 VERIFIED · 6 REST</span><strong>94% CONSISTENCY</strong></footer>
-        </section>
-      </div>
+          <section className="heatmap-panel">
+            <div className="heatmap-head"><div><span className="eyebrow">TODAY&apos;S PROOFS</span><h2>今日履约状态</h2></div></div>
+            <div className="proof-day-list">
+              {activePacts.length ? activePacts.map((pact) => <span key={pact.id} className={checkedIds.has(pact.id) ? "verified" : "pending"}><i />PACT #{pact.id}<strong>{checkedIds.has(pact.id) ? "已证明" : "待自动验真"}</strong></span>) : <p>当前没有执行中的契约。</p>}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

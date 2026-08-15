@@ -40,12 +40,11 @@ export const protocolAbi = parseAbi([
   "event Completed(uint256 indexed pactId,address indexed participant,uint32 indexed epoch,address relayer,bytes32 nullifier,bytes32 publicInputsHash)",
 ]);
 
-export const testUsdcAbi = parseAbi([
-  "function claim()",
-  "function claimed(address account) view returns (bool)",
+export const collateralTokenAbi = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
   "function allowance(address owner,address spender) view returns (uint256)",
   "function approve(address spender,uint256 amount) returns (bool)",
+  "function decimals() view returns (uint8)",
 ]);
 
 function configuredAddress(value: string | undefined) {
@@ -53,7 +52,7 @@ function configuredAddress(value: string | undefined) {
 }
 
 export const moncastAddress = configuredAddress(process.env.NEXT_PUBLIC_MONCAST_CONTRACT_ADDRESS);
-export const testUsdcAddress = configuredAddress(process.env.NEXT_PUBLIC_USDC_ADDRESS);
+export const collateralTokenAddress = configuredAddress(process.env.NEXT_PUBLIC_USDC_ADDRESS);
 export const verifierAddress = configuredAddress(process.env.NEXT_PUBLIC_VERIFIER_ADDRESS);
 export const inviteAuthorityAddress = configuredAddress(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS);
 
@@ -107,8 +106,8 @@ export async function writeWithTightGas(
 export async function readWalletBalances(account: Address) {
   const [mon, usdc] = await Promise.all([
     publicClient.getBalance({ address: account, blockTag: "safe" }),
-    testUsdcAddress
-      ? publicClient.readContract({ address: testUsdcAddress, abi: testUsdcAbi, functionName: "balanceOf", args: [account], blockTag: "safe" })
+    collateralTokenAddress
+      ? publicClient.readContract({ address: collateralTokenAddress, abi: collateralTokenAbi, functionName: "balanceOf", args: [account], blockTag: "safe" })
       : Promise.resolve(0n),
   ]);
   return { mon: formatUnits(mon, 18), usdc: formatUnits(usdc, 6) };

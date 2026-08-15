@@ -38,8 +38,18 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
     if (phase === "running" || alreadyCompleted) return;
     const participant = account ?? await onWallet();
     const injected = provider ?? window.ethereum;
-    if (!participant || !injected || !moncastAddress) {
-      setFailureReason("请先连接个人钱包，并确认 Moncast 测试网合约已配置。");
+    if (!participant) {
+      setFailureReason("个人钱包尚未连接。请先连接钱包并切换到 Monad 测试网。");
+      setPhase("failed");
+      return;
+    }
+    if (!injected) {
+      setFailureReason("未检测到当前钱包提供方，请刷新页面后重新连接。");
+      setPhase("failed");
+      return;
+    }
+    if (!moncastAddress) {
+      setFailureReason("Moncast 测试网协议地址未配置。请先完成合约部署并写入 NEXT_PUBLIC_MONCAST_CONTRACT_ADDRESS。");
       setPhase("failed");
       return;
     }
@@ -76,7 +86,16 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
       onSuccess(pact);
     } catch (cause) {
       const code = cause instanceof Error ? cause.message : "PROOF_FAILED";
-      setFailureReason(code === "TARGET_NOT_COMPLETED" ? "官方数据尚未检测到今日完成记录。先完成目标，再重新验真。" : code === "ALREADY_COMPLETED" ? "今日契约已经完成，无需重复提交。" : code);
+      const readable: Record<string, string> = {
+        TARGET_NOT_COMPLETED: "官方数据尚未检测到今日完成记录。先完成目标，再重新验真。",
+        ALREADY_COMPLETED: "今日契约已经完成，无需重复提交。",
+        CONTRACT_NOT_CONFIGURED: "Moncast 测试网协议尚未配置，证明没有广播。",
+        ATTESTOR_NOT_CONFIGURED: "验真签名服务尚未配置，证明没有广播。",
+        AUTOMATION_MEMBER_NOT_REGISTERED: "当前钱包或平台账号未登记在这份真实契约中。",
+        COMPLETION_WINDOW_CLOSED: "该契约当前不在执行期，不能提交完成证明。",
+        PROFILE_NOT_FOUND: "未找到已绑定的平台公开账号。",
+      };
+      setFailureReason(readable[code] ?? code);
       setPhase(code === "ALREADY_COMPLETED" ? "success" : "failed");
     }
   }

@@ -1,14 +1,15 @@
 # Production checklist
 
-当前目标网络固定为 Monad Testnet（chain ID `10143`）。mtUSDC、attestor 与 relayer 均仅用于测试，不得迁移到主网。
+当前目标网络固定为 Monad Testnet（chain ID `10143`）。水龙头 USDC、attestor 与 relayer 均仅用于测试，不得迁移到主网。
 
 ## 测试网上线
 
-1. 用个人钱包从 `/deploy` 部署 `MockUSDC`、`AttestedProofVerifier`、`MoncastProtocol`。
-2. 通过 `eth_getCode` 核验三个地址，并在 Monadscan 验证源码。
-3. 给 relayer 地址充值少量测试 MON；新充值账户等待至少约 1.2 秒后再发交易。
-4. 写入 `.env.local`，重启服务后实测领取 1,000 mtUSDC、授权、发起、加入、招募激活和完成证明。
-5. 为 Cron 配置不可预测的 `CRON_SECRET`，并监控 relayer MON 余额、失败率和平台适配器延迟。
+1. 核对所用水龙头 USDC 的测试网地址、字节码和 6 位小数配置。
+2. 用个人钱包从 `/deploy` 部署 `AttestedProofVerifier`、`MoncastProtocol`。
+3. 通过 `eth_getCode` 核验 USDC 与两个新部署地址，并在 Monadscan 验证源码。
+4. 给 relayer 地址充值少量测试 MON；新充值账户等待至少约 1.2 秒后再发交易。
+5. 写入 `.env.local`，重启服务后实测授权、发起、加入、招募激活和完成证明。
+6. 为 Cron 配置不可预测的 `CRON_SECRET`，并监控 relayer MON 余额、失败率和平台适配器延迟。
 
 ## 主网前硬门槛
 

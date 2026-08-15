@@ -1,6 +1,7 @@
 export type ViewName = "plaza" | "mine" | "formulate" | "manifesto";
 export type GoalType = "leetcode" | "duolingo" | "custom";
 export type PactState = "verified" | "proving" | "locked" | "private";
+export type PactLifecycle = "recruiting" | "activating" | "active" | "cancelled" | "finalized" | "unknown";
 
 export type PactSummary = {
   id: string;
@@ -11,6 +12,7 @@ export type PactSummary = {
   durationDays: 7 | 14 | 30;
   remainingDays: number;
   recruiting: boolean;
+  lifecycle: PactLifecycle;
   recruitmentLabel: string;
   stake: number;
   pool: number;
@@ -33,6 +35,7 @@ export const pacts: PactSummary[] = [
     isPrivate: false,
     durationDays: 14,
     recruiting: true,
+    lifecycle: "recruiting",
     recruitmentLabel: "2 天 08 时",
     remainingDays: 11,
     stake: 100,
@@ -53,6 +56,7 @@ export const pacts: PactSummary[] = [
     isPrivate: false,
     durationDays: 30,
     recruiting: true,
+    lifecycle: "recruiting",
     recruitmentLabel: "18 小时",
     remainingDays: 28,
     stake: 50,
@@ -73,6 +77,7 @@ export const pacts: PactSummary[] = [
     isPrivate: true,
     durationDays: 30,
     recruiting: false,
+    lifecycle: "finalized",
     recruitmentLabel: "已结束",
     remainingDays: 0,
     stake: 100,
@@ -93,6 +98,7 @@ export const pacts: PactSummary[] = [
     isPrivate: true,
     durationDays: 7,
     recruiting: true,
+    lifecycle: "recruiting",
     recruitmentLabel: "6 天 03 时",
     remainingDays: 6,
     stake: 30,
@@ -113,6 +119,7 @@ export const pacts: PactSummary[] = [
     isPrivate: false,
     durationDays: 14,
     recruiting: true,
+    lifecycle: "recruiting",
     recruitmentLabel: "1 天 11 时",
     remainingDays: 9,
     stake: 200,
@@ -133,6 +140,7 @@ export const pacts: PactSummary[] = [
     isPrivate: false,
     durationDays: 30,
     recruiting: false,
+    lifecycle: "active",
     recruitmentLabel: "已结束",
     remainingDays: 21,
     stake: 50,

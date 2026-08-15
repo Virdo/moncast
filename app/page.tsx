@@ -10,16 +10,16 @@ import { ManifestoView } from "@/components/ManifestoView";
 import { MyPactsView } from "@/components/MyPactsView";
 import { PlazaView } from "@/components/PlazaView";
 import { Icon } from "@/components/Icon";
-import { pacts, type GoalType, type PactSummary, type ViewName } from "@/lib/pacts";
+import { pacts, type GoalType, type PactLifecycle, type PactSummary, type ViewName } from "@/lib/pacts";
 import {
+  collateralTokenAbi,
+  collateralTokenAddress,
   commitmentHash,
   inviteAuthorityAddress,
   moncastAddress,
   pactUrl,
   protocolAbi,
   publicClient,
-  testUsdcAbi,
-  testUsdcAddress,
   writeWithTightGas,
 } from "@/lib/moncast-chain";
 import { useMoncastWallet } from "@/lib/use-moncast-wallet";
@@ -51,9 +51,18 @@ function recruitmentLabel(endsAt: number) {
   return days ? `${days} 天 ${hours} 时` : `${Math.max(1, hours)} 小时`;
 }
 
-function toSummary(pact: RegistryPact, account?: Address): PactSummary {
+const lifecycleByStatus: Record<number, PactLifecycle> = {
+  1: "recruiting",
+  2: "activating",
+  3: "active",
+  4: "cancelled",
+  5: "finalized",
+};
+
+function toSummary(pact: RegistryPact, account?: Address, chainLifecycle?: PactLifecycle): PactSummary {
   const member = pact.members.find((item) => item.address.toLowerCase() === account?.toLowerCase());
-  const recruiting = pact.recruitmentEndsAt > Date.now() / 1000;
+  const lifecycle = chainLifecycle ?? (pact.recruitmentEndsAt > Date.now() / 1000 ? "recruiting" : "unknown");
+  const recruiting = lifecycle === "recruiting";
   return {
     id: pact.id,
     title: pact.title,
@@ -63,6 +72,7 @@ function toSummary(pact: RegistryPact, account?: Address): PactSummary {
     durationDays: pact.durationDays,
     remainingDays: pact.durationDays,
     recruiting,
+    lifecycle,
     recruitmentLabel: recruitmentLabel(pact.recruitmentEndsAt),
     stake: pact.stake,
     pool: pact.members.length * pact.stake,
@@ -83,9 +93,9 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [checkInPact, setCheckInPact] = useState<PactSummary | null>(null);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const [rewardClaimed, setRewardClaimed] = useState(false);
   const [toast, setToast] = useState("");
   const [registry, setRegistry] = useState<RegistryPact[]>([]);
+  const [chainLifecycles, setChainLifecycles] = useState<Record<string, PactLifecycle>>({});
   const wallet = useMoncastWallet(setToast);
 
   const refreshRegistry = useCallback(async () => {
@@ -95,16 +105,34 @@ export default function Home() {
     setRegistry(data.pacts ?? []);
   }, []);
 
-  const livePacts = useMemo(() => registry.map((item) => toSummary(item, wallet.account)), [registry, wallet.account]);
+  const livePacts = useMemo(() => registry.map((item) => toSummary(item, wallet.account, chainLifecycles[item.id])), [chainLifecycles, registry, wallet.account]);
   const myPacts = useMemo(() => registry
-    .filter((item) => item.members.some((member) => member.address.toLowerCase() === wallet.account?.toLowerCase()))
-    .map((item) => toSummary(item, wallet.account)), [registry, wallet.account]);
+    .filter((item) => item.creator.toLowerCase() === wallet.account?.toLowerCase()
+      || item.members.some((member) => member.address.toLowerCase() === wallet.account?.toLowerCase()))
+    .map((item) => toSummary(item, wallet.account, chainLifecycles[item.id])), [chainLifecycles, registry, wallet.account]);
+
+  useEffect(() => {
+    const configuredProtocol = moncastAddress;
+    if (!configuredProtocol || !registry.length) return;
+    let cancelled = false;
+    void Promise.all(registry.map(async (pact) => {
+      try {
+        const state = await publicClient.readContract({ address: configuredProtocol, abi: protocolAbi, functionName: "pacts", args: [BigInt(pact.id)], blockTag: "safe" });
+        return [pact.id, lifecycleByStatus[Number(state[21])] ?? "unknown"] as const;
+      } catch {
+        return [pact.id, "unknown"] as const;
+      }
+    })).then((entries) => {
+      if (!cancelled) setChainLifecycles(Object.fromEntries(entries));
+    });
+    return () => { cancelled = true; };
+  }, [registry]);
 
   useEffect(() => {
     const configuredProtocol = moncastAddress;
     if (!wallet.account || !configuredProtocol || !myPacts.length) return;
     let cancelled = false;
-    void Promise.all(myPacts.filter((pact) => !pact.recruiting).map(async (pact) => {
+    void Promise.all(myPacts.filter((pact) => pact.lifecycle === "active").map(async (pact) => {
       try {
         const [epoch, open] = await publicClient.readContract({ address: configuredProtocol, abi: protocolAbi, functionName: "currentEpoch", args: [BigInt(pact.id)], blockTag: "safe" });
         if (!open) return null;
@@ -151,10 +179,11 @@ export default function Home() {
   const launchPact = useCallback(async (input: LaunchPactInput) => {
     const account = wallet.account ?? await wallet.connect();
     if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
-    if (!moncastAddress || !testUsdcAddress) throw new Error("Moncast 测试网合约尚未写入配置。");
+    if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置，请先完成部署并重启服务。");
+    if (!collateralTokenAddress) throw new Error("测试网 USDC 地址未配置，请填写水龙头对应的代币合约地址。");
     const stakeAmount = BigInt(input.stake) * 1_000_000n;
-    setToast(`请授权 ${input.stake} mtUSDC，招募结束后才会划转`);
-    await writeWithTightGas(wallet.provider, account, testUsdcAddress, testUsdcAbi, "approve", [moncastAddress, stakeAmount]);
+    setToast(`请授权 ${input.stake} USDC，招募结束后才会划转`);
+    await writeWithTightGas(wallet.provider, account, collateralTokenAddress, collateralTokenAbi, "approve", [moncastAddress, stakeAmount]);
 
     const rule = input.target === "leetcode" ? "每日 AC ≥ 1" : input.target === "duolingo" ? "每日完成 ≥ 1 次学习并延续连胜" : input.rule;
     const metadataHash = commitmentHash({ title: input.title, target: input.target, schema: "moncast/1" });
@@ -195,9 +224,9 @@ export default function Home() {
   }, [toast]);
 
   return (
-    <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} onWallet={() => { void wallet.connect(); }}>
+    <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} contractsReady={Boolean(moncastAddress && collateralTokenAddress)} onWallet={() => { void wallet.connect(); }}>
       {view === "plaza" && <PlazaView livePacts={livePacts} onJoin={(pact) => { setJoinCode(pact.isPrivate ? "" : "OPEN"); setJoinPact(pact); }} onFormulate={() => navigate("formulate")} />}
-      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} rewardClaimed={rewardClaimed} onCheckIn={setCheckInPact} onClaim={() => { setRewardClaimed(true); setToast("结算功能会在契约到期后开放"); }} />}
+      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} onCheckIn={setCheckInPact} onFormulate={() => navigate("formulate")} />}
       {view === "formulate" && <FormulateView onLaunch={launchPact} />}
       {view === "manifesto" && <ManifestoView />}
 

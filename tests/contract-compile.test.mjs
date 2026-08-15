@@ -9,7 +9,6 @@ const contractFiles = [
   "contracts/src/ICommitmentVerifier.sol",
   "contracts/src/AttestedProofVerifier.sol",
   "contracts/src/MoncastProtocol.sol",
-  "contracts/src/MockUSDC.sol",
 ];
 
 function findImport(path) {
@@ -68,10 +67,4 @@ test("Moncast contracts compile and expose recruitment, completion and settlemen
   assert.ok(events.has("Completed"));
   assert.ok(events.has("MemberLiquidated"));
   assert.ok(events.has("RewardClaimed"));
-
-  const faucet = output.contracts["contracts/src/MockUSDC.sol"].MockUSDC;
-  const faucetFunctions = new Set(faucet.abi.filter((entry) => entry.type === "function").map((entry) => entry.name));
-  assert.ok(faucetFunctions.has("claim"), "test token should expose a one-time faucet");
-  assert.ok(faucetFunctions.has("claimed"), "faucet should track claimed addresses");
-  assert.equal(faucetFunctions.has("mint"), false, "test token must not expose unrestricted mint");
 });

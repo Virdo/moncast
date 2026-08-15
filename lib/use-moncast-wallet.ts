@@ -1,15 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Address, Hash } from "viem";
+import type { Address } from "viem";
 import {
   moncastAddress,
   readWalletBalances,
   switchToMonadTestnet,
-  testUsdcAbi,
-  testUsdcAddress,
   type InjectedProvider,
-  writeWithTightGas,
 } from "./moncast-chain";
 
 declare global {
@@ -23,11 +20,9 @@ type WalletState = {
   monBalance: string;
   usdcBalance: string;
   connecting: boolean;
-  claiming: boolean;
-  lastTransaction?: Hash;
 };
 
-const initialState: WalletState = { monBalance: "0", usdcBalance: "0", connecting: false, claiming: false };
+const initialState: WalletState = { monBalance: "0", usdcBalance: "0", connecting: false };
 
 export function useMoncastWallet(onNotice: (message: string) => void) {
   const [state, setState] = useState<WalletState>(initialState);
@@ -37,27 +32,6 @@ export function useMoncastWallet(onNotice: (message: string) => void) {
     const balances = await readWalletBalances(account).catch(() => null);
     if (balances) setState((current) => ({ ...current, ...balances }));
   }, []);
-
-  const claimTestUsdc = useCallback(async (account: Address) => {
-    const provider = window.ethereum;
-    if (!provider || !testUsdcAddress) return;
-    const alreadyClaimed = await (async () => {
-      const { publicClient } = await import("./moncast-chain");
-      return publicClient.readContract({ address: testUsdcAddress, abi: testUsdcAbi, functionName: "claimed", args: [account], blockTag: "safe" });
-    })().catch(() => true);
-    if (alreadyClaimed) return;
-    setState((current) => ({ ...current, claiming: true }));
-    try {
-      onNotice("请在钱包确认领取 1,000 mtUSDC 测试币");
-      const { hash } = await writeWithTightGas(provider, account, testUsdcAddress, testUsdcAbi, "claim");
-      setState((current) => ({ ...current, claiming: false, lastTransaction: hash }));
-      await refresh(account);
-      onNotice("1,000 mtUSDC 已真实发放到钱包");
-    } catch {
-      setState((current) => ({ ...current, claiming: false }));
-      onNotice("测试币领取已取消，可稍后点击钱包区域重试");
-    }
-  }, [onNotice, refresh]);
 
   const connect = useCallback(async () => {
     const provider = window.ethereum;
@@ -74,14 +48,13 @@ export function useMoncastWallet(onNotice: (message: string) => void) {
       setState((current) => ({ ...current, account, connecting: false }));
       await refresh(account);
       onNotice(moncastAddress ? "钱包已连接 Monad 测试网" : "钱包已连接；合约地址尚待部署写入");
-      if (testUsdcAddress) await claimTestUsdc(account);
       return account;
     } catch {
       setState((current) => ({ ...current, connecting: false }));
       onNotice("钱包连接或切换网络已取消");
       return undefined;
     }
-  }, [claimTestUsdc, onNotice, refresh]);
+  }, [onNotice, refresh]);
 
   useEffect(() => {
     const provider = window.ethereum;
@@ -103,5 +76,5 @@ export function useMoncastWallet(onNotice: (message: string) => void) {
     return () => provider.removeListener?.("accountsChanged", onAccounts);
   }, [refresh]);
 
-  return { ...state, connect, refresh, claimTestUsdc, provider: typeof window === "undefined" ? undefined : window.ethereum };
+  return { ...state, connect, refresh, provider: typeof window === "undefined" ? undefined : window.ethereum };
 }

@@ -7,7 +7,6 @@ const sources = [
   "contracts/src/ICommitmentVerifier.sol",
   "contracts/src/AttestedProofVerifier.sol",
   "contracts/src/MoncastProtocol.sol",
-  "contracts/src/MockUSDC.sol",
 ];
 
 function findImport(path) {
@@ -31,7 +30,6 @@ const errors = (output.errors ?? []).filter((entry) => entry.severity === "error
 if (errors.length) throw new Error(errors.map((entry) => entry.formattedMessage).join("\n"));
 
 const selection = {
-  MockUSDC: output.contracts["contracts/src/MockUSDC.sol"].MockUSDC,
   AttestedProofVerifier: output.contracts["contracts/src/AttestedProofVerifier.sol"].AttestedProofVerifier,
   MoncastProtocol: output.contracts["contracts/src/MoncastProtocol.sol"].MoncastProtocol,
 };

@@ -6,8 +6,8 @@ import { goalMeta, type PactSummary } from "@/lib/pacts";
 import {
   moncastAddress,
   protocolAbi,
-  testUsdcAbi,
-  testUsdcAddress,
+  collateralTokenAbi,
+  collateralTokenAddress,
   txUrl,
   type InjectedProvider,
   writeWithTightGas,
@@ -68,7 +68,7 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
       setError("请先查验目标平台账户。");
       return;
     }
-    if (!moncastAddress || !testUsdcAddress) {
+    if (!moncastAddress || !collateralTokenAddress) {
       setError("Moncast 测试网合约尚未写入配置。");
       return;
     }
@@ -76,7 +76,7 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
     setError("");
     try {
       const amount = BigInt(pact.stake) * 1_000_000n;
-      await writeWithTightGas(injected, participant, testUsdcAddress, testUsdcAbi, "approve", [moncastAddress, amount]);
+      await writeWithTightGas(injected, participant, collateralTokenAddress, collateralTokenAbi, "approve", [moncastAddress, amount]);
 
       let nonce = 0n;
       let deadline = 0n;
@@ -116,7 +116,7 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
         <div className="success-state join-success">
           <div className="success-glyph"><Icon name="check" /></div>
           <span className="eyebrow">ENROLLMENT RECORDED</span>
-          <h3>已授权 {pact.stake} mtUSDC，当前尚未扣款</h3>
+          <h3>已授权 {pact.stake} USDC，当前尚未扣款</h3>
           <p>招募结束后，自动执行器会统一签订契约并从仍具备余额和授权的成员钱包划转保证金；授权失效的成员会被自动排除。</p>
           <div className="success-receipt"><span>PACT</span><code>#{pact.id}</code><span>RECRUITMENT</span><code>{pact.recruitmentLabel}</code><span>AUTO PROOF</span><code>23:00–24:00</code></div>
           {transactionHash && <a className="button outline" href={txUrl(transactionHash)} target="_blank" rel="noreferrer">查看链上交易<Icon name="external" /></a>}
@@ -130,8 +130,8 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
             <dl className="term-table">
               <div><dt>目标规则</dt><dd>{pact.rule}</dd></div>
               <div><dt>招募剩余</dt><dd>{pact.recruitmentLabel}</dd></div>
-              <div><dt>单人保证金</dt><dd>{pact.stake} mtUSDC</dd></div>
-              <div><dt>当前意向池</dt><dd>{pact.pool.toLocaleString()} mtUSDC</dd></div>
+              <div><dt>单人保证金</dt><dd>{pact.stake} USDC</dd></div>
+              <div><dt>当前意向池</dt><dd>{pact.pool.toLocaleString()} USDC</dd></div>
               <div><dt>自动验真</dt><dd>每日 23:00–24:00</dd></div>
             </dl>
             <div className="member-wall"><header><span>招募成员</span><strong>{pact.members}/{pact.maxMembers}</strong></header><div>{pact.avatars.concat(["KX", "Z3", "TA", "0G"]).map((avatar, index) => <span key={`${avatar}-${index}`}>{avatar}</span>)}<b>+{Math.max(0, pact.members - 8)}</b></div></div>
@@ -142,7 +142,7 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
             <p>只读取公开进度生成证明。用户名不会写入 Moncast 合约。</p>
             <label className="field"><span>{pact.platformHandleHint}</span><input value={handle} onChange={(event) => { setHandle(event.target.value); setProfileReady(false); setProfileSummary(""); }} placeholder="输入公开用户名" disabled={busy} /></label>
             {profileReady ? <div className="verified-profile"><span>{handle.slice(0, 2).toUpperCase()}</span><div><strong>{handle}</strong><small><i /> {profileSummary} · VERIFIED</small></div><Icon name="check" /></div> : <button className="button outline full" onClick={verifyProfile} disabled={busy}>{busy ? "正在查验" : "查验账户"}</button>}
-            <div className="deposit-summary"><span>招募结束后划转</span><strong>{pact.stake}<i>mtUSDC</i></strong><small>现在只写入加入意向与代币授权<br />成功签约后才开始每日履约</small></div>
+            <div className="deposit-summary"><span>招募结束后划转</span><strong>{pact.stake}<i>USDC</i></strong><small>现在只写入加入意向与代币授权<br />成功签约后才开始每日履约</small></div>
             {error && <p className="form-error" role="alert"><Icon name="warning" />{error}</p>}
             <button className="button primary full" onClick={join} disabled={busy}>{busy ? "等待钱包确认" : "加入战队"}<Icon name="arrow" /></button>
             <p className="microcopy"><Icon name="shield" />真实 Monad Testnet 交易；Monad 按 gas limit 计费，客户端估算后仅加 10% 缓冲。</p>

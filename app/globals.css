@@ -37,6 +37,7 @@ svg { width: 20px; height: 20px; flex: 0 0 auto; }
 .sidebar { position: fixed; inset: 0 auto 0 0; width: 264px; z-index: 10; display: flex; flex-direction: column; background: rgba(7, 9, 10, .94); border-right: 1px solid var(--line); backdrop-filter: blur(24px); }
 .brand-block { padding: 30px 24px 24px; border-bottom: 1px solid var(--line); }
 .brand-lockup { display: flex; align-items: center; gap: 13px; }
+.brand-logo { display: block; width: 44px; height: 44px; object-fit: contain; }
 .brand-mark { position: relative; display: grid; grid-template-columns: repeat(3, 5px); grid-auto-rows: 5px; gap: 3px; place-content: center; width: 42px; height: 42px; border: 1px solid var(--lime); background: #0c0f05; box-shadow: inset 0 0 18px rgba(223, 255, 0, .08); }
 .brand-mark i { display: block; background: var(--lime); }
 .brand-mark i:nth-child(2), .brand-mark i:nth-child(5) { opacity: .25; }
@@ -150,6 +151,9 @@ svg { width: 20px; height: 20px; flex: 0 0 auto; }
 .empty-state svg { width: 35px; height: 35px; color: var(--lime); }
 .empty-state h3, .empty-state p { margin: 0; }
 .empty-state h3 { color: var(--text); }
+.mine-empty { min-height: 420px; margin-top: 54px; }
+.mine-empty p { max-width: 460px; line-height: 1.7; }
+.mine-empty .button { margin-top: 8px; }
 
 /* My Pacts */
 .system-strip { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-top: 0; background: var(--surface-low); }
@@ -203,6 +207,12 @@ svg { width: 20px; height: 20px; flex: 0 0 auto; }
 .heatmap-grid { display: grid; grid-template-rows: repeat(7, 11px); grid-auto-flow: column; grid-auto-columns: 11px; gap: 4px; margin: 24px 0; overflow-x: auto; scrollbar-width: thin; }
 .heatmap-panel footer { display: flex; justify-content: space-between; color: #5f635f; font: 7px var(--mono); }
 .heatmap-panel footer strong { color: var(--lime); }
+.proof-day-list { display: grid; gap: 10px; margin-top: 24px; }
+.proof-day-list > span { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 13px 14px; border: 1px solid var(--line); color: var(--muted); font: 700 9px var(--mono); }
+.proof-day-list > span i { width: 7px; height: 7px; background: var(--blue); box-shadow: 0 0 7px var(--blue); }
+.proof-day-list > span.verified i { background: var(--lime); box-shadow: 0 0 7px var(--lime); }
+.proof-day-list > span strong { color: var(--muted-2); font-size: 9px; }
+.proof-day-list p { margin: 0; color: var(--muted); font-size: 11px; }
 
 /* Formulate */
 .form-step-indicator { display: flex; gap: 7px; }
@@ -318,7 +328,7 @@ svg { width: 20px; height: 20px; flex: 0 0 auto; }
   .sidebar { display: none; }
   .main-canvas { margin-left: 0; padding-top: 64px; padding-bottom: 64px; }
   .mobile-header { position: fixed; inset: 0 0 auto; z-index: 30; height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); background: rgba(7,9,10,.92); backdrop-filter: blur(20px); }
-  .mobile-brand { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--lime); font: 800 11px var(--mono); letter-spacing: .14em; }.mobile-brand .brand-mark { width: 32px; height: 32px; grid-template-columns: repeat(2, 4px); grid-auto-rows: 4px; }
+  .mobile-brand { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--lime); font: 800 11px var(--mono); letter-spacing: .14em; }.mobile-brand .brand-logo { width: 32px; height: 32px; }
   .mobile-nav { position: fixed; inset: auto 0 0; z-index: 30; height: 64px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); background: rgba(7,9,10,.94); backdrop-filter: blur(20px); }.mobile-nav button { display: grid; place-items: center; align-content: center; gap: 4px; border: 0; border-top: 2px solid transparent; background: transparent; color: #737773; cursor: pointer; }.mobile-nav button.active { color: var(--lime); border-top-color: var(--lime); background: linear-gradient(180deg, rgba(223,255,0,.08), transparent); }.mobile-nav svg { width: 18px; height: 18px; }.mobile-nav small { font: 700 8px var(--mono); }
   .mobile-launch { position: fixed; right: 18px; bottom: 78px; z-index: 35; width: 50px; height: 50px; display: grid; place-items: center; border: 1px solid var(--lime); background: var(--lime); color: #111; box-shadow: 0 14px 38px rgba(0,0,0,.45); }
   .view { padding: 42px 24px 70px; }

@@ -2,7 +2,7 @@
 
 > 抛锚立约，一诺上链，坚持自动发生。
 
-Moncast 是运行于 Monad 的可验证自律承诺协议。成员先加入招募并授权 mtUSDC；招募截止后，自动执行器才批量划转保证金、正式签订契约并开始履约。LeetCode 与 Duolingo 的每日完成状态会在用户本地时区 23:00–24:00 自动核验，用户也可通过“完成契约”按钮展示同一条证明链路。
+Moncast 是运行于 Monad 的可验证自律承诺协议。成员先加入招募并授权测试网 USDC；招募截止后，自动执行器才批量划转保证金、正式签订契约并开始履约。LeetCode 与 Duolingo 的每日完成状态会在用户本地时区 23:00–24:00 自动核验，用户也可通过“完成契约”按钮展示同一条证明链路。
 
 ## 本地运行
 
@@ -21,12 +21,13 @@ npm run build:contracts
 npm run dev -- --port 3003
 ```
 
-1. 在 `/deploy` 连接个人钱包并确认 3 笔部署交易。
-2. 使用 `node scripts/save-deployment-addresses.mjs <USDC> <VERIFIER> <PROTOCOL>` 保存地址。
-3. 重启开发服务器。
-4. 给 `.env.local` 中的 relayer 地址少量测试网 MON，供招募激活和 23:00 自动完成交易使用。
+1. 从 [Circle Faucet](https://faucet.circle.com/) 获取测试网 USDC。官方 Monad Testnet USDC 为 `0x534b2f3A21130d7a60830c2Df862319e593943A3`（6 位小数）。
+2. 在 `/deploy` 填写该 USDC 地址，连接个人钱包并确认 2 笔部署交易。
+3. 使用 `node scripts/save-deployment-addresses.mjs <USDC> <VERIFIER> <PROTOCOL>` 保存地址。
+4. 重启开发服务器。
+5. 给 `.env.local` 中的 relayer 地址少量测试网 MON，供招募激活和 23:00 自动完成交易使用。
 
-钱包首次连接会调用链上 `MockUSDC.claim()`，每个地址仅可领取一次 1,000 mtUSDC。
+Moncast 不内置测试币或自动领币逻辑；测试资产由用户自行从水龙头获取。
 
 ## 验证
 
