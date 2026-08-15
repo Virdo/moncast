@@ -1,14 +1,14 @@
 {
   "network": "Monad Testnet",
   "chainId": 10143,
-  "deployedAt": "2026-08-15T09:26:56.000Z",
+  "deployedAt": "2026-08-15T10:09:51.000Z",
   "deployer": "0x48b0e1cAEe2d22c2Ba2D34d32bC8008404Bd22eB",
   "contracts": {
     "usdc": "0x534b2f3A21130d7a60830c2Df862319e593943A3",
     "attestedProofVerifier": "0x32867799f03d56aac4D2A900e4b9B4404A056ed1",
-    "moncastProtocol": "0x97716448e8a4a9d282ce2c7788ce979cde4d1a20"
+    "moncastProtocol": "0x2d750e231f187becf1dcbe69b50c9e066412d964"
   },
-  "deploymentTransaction": "0xa90c2f4584bfb834007e1a67627d3287cb1f303be22384c067be825949b4e925",
+  "deploymentTransaction": "0x510a2039c1d68a427ab21f7933db2babcce8ddd5fe1b76ca30b2ea3cd3d42a10",
   "attestor": "0x1E656f0db0f2A5669D77b842B9a8B6d400DDF46E",
   "explorer": "https://testnet.monadscan.com"
 }
