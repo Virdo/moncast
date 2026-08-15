@@ -9,6 +9,7 @@ export type PactSummary = {
   goalType: GoalType;
   state: PactState;
   isPrivate: boolean;
+  isCreator?: boolean;
   durationDays: 7 | 14 | 30;
   remainingDays: number;
   recruiting: boolean;

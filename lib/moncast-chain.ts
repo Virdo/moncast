@@ -28,6 +28,7 @@ export const protocolAbi = parseAbi([
   "function createPact((bytes32 metadataHash,bytes32 ruleHash,address inviteAuthority,uint8 durationDays,uint40 recruitmentDuration,uint128 stakeAmount,uint16 maxMembers,int16 utcOffsetMinutes,bool isPrivate) config) returns (uint256 pactId)",
   "function joinPact(uint256 pactId,uint256 inviteNonce,uint256 inviteDeadline,bytes inviteSignature)",
   "function activateMembers(uint256 pactId,uint16 limit)",
+  "function startPactNow(uint256 pactId)",
   "function complete(uint256 pactId,uint32 epoch,bytes32 nullifier,bytes32 publicInputsHash,bytes proof)",
   "function completeFor(uint256 pactId,address participant,uint32 epoch,bytes32 nullifier,bytes32 publicInputsHash,bytes proof)",
   "function currentEpoch(uint256 pactId) view returns (uint32 epoch,bool completionOpen)",
@@ -37,6 +38,9 @@ export const protocolAbi = parseAbi([
   "function pactCount() view returns (uint256)",
   "event PactCreated(uint256 indexed pactId,address indexed creator,bytes32 indexed metadataHash,bytes32 ruleHash,uint40 recruitmentEndsAt,uint128 stakeAmount,uint16 maxMembers,bool isPrivate)",
   "event MemberEnrolled(uint256 indexed pactId,address indexed participant)",
+  "event RecruitmentClosedEarly(uint256 indexed pactId,address indexed creator,uint40 scheduledEndsAt)",
+  "event PactActivated(uint256 indexed pactId,uint32 startLocalDay,uint32 endLocalDay,uint16 fundedCount)",
+  "event PactCancelled(uint256 indexed pactId,uint16 fundedCount)",
   "event Completed(uint256 indexed pactId,address indexed participant,uint32 indexed epoch,address relayer,bytes32 nullifier,bytes32 publicInputsHash)",
 ]);
 

@@ -69,6 +69,7 @@ function toSummary(pact: RegistryPact, account?: Address, chainLifecycle?: PactL
     goalType: pact.platform,
     state: pact.isPrivate ? "private" : recruiting ? "proving" : "verified",
     isPrivate: pact.isPrivate,
+    isCreator: pact.creator.toLowerCase() === account?.toLowerCase(),
     durationDays: pact.durationDays,
     remainingDays: pact.durationDays,
     recruiting,
@@ -93,6 +94,7 @@ export default function Home() {
   const [joinCode, setJoinCode] = useState("");
   const [checkInPact, setCheckInPact] = useState<PactSummary | null>(null);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [startingPactId, setStartingPactId] = useState<string>();
   const [toast, setToast] = useState("");
   const [registry, setRegistry] = useState<RegistryPact[]>([]);
   const [chainLifecycles, setChainLifecycles] = useState<Record<string, PactLifecycle>>({});
@@ -217,6 +219,30 @@ export default function Home() {
     return { shareUrl: pactUrl(pactId, inviteCode), transactionHash: hash as Hash };
   }, [refreshRegistry, wallet]);
 
+  const startPactNow = useCallback(async (pact: PactSummary) => {
+    const account = wallet.account ?? await wallet.connect();
+    if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
+    if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
+    if (!pact.isCreator) throw new Error("只有契约发起人可以立即开始。");
+    setStartingPactId(pact.id);
+    setToast("请确认立即开始交易；确认后停止招募并划转当前成员保证金");
+    try {
+      const { receipt } = await writeWithTightGas(wallet.provider, account, moncastAddress, protocolAbi, "startPactNow", [BigInt(pact.id)]);
+      const activated = parseEventLogs({ abi: protocolAbi, logs: receipt.logs, eventName: "PactActivated", strict: true })
+        .some((event) => event.args.pactId === BigInt(pact.id));
+      const cancelled = parseEventLogs({ abi: protocolAbi, logs: receipt.logs, eventName: "PactCancelled", strict: true })
+        .some((event) => event.args.pactId === BigInt(pact.id));
+      await refreshRegistry();
+      if (activated) setToast(`契约 #${pact.id} 已停止招募并开始执行`);
+      else if (cancelled) setToast("有效授权成员不足 2 人，契约已取消；已扣款成员可取回保证金");
+      else setToast("交易已确认，正在同步契约状态");
+    } catch (cause) {
+      setToast(cause instanceof Error ? cause.message : "立即开始失败");
+    } finally {
+      setStartingPactId(undefined);
+    }
+  }, [refreshRegistry, wallet]);
+
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(""), 3600);
@@ -226,7 +252,7 @@ export default function Home() {
   return (
     <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} contractsReady={Boolean(moncastAddress && collateralTokenAddress)} onWallet={() => { void wallet.connect(); }}>
       {view === "plaza" && <PlazaView livePacts={livePacts} onJoin={(pact) => { setJoinCode(pact.isPrivate ? "" : "OPEN"); setJoinPact(pact); }} onFormulate={() => navigate("formulate")} />}
-      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} onCheckIn={setCheckInPact} onFormulate={() => navigate("formulate")} />}
+      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} startingPactId={startingPactId} onCheckIn={setCheckInPact} onStartNow={startPactNow} onFormulate={() => navigate("formulate")} />}
       {view === "formulate" && <FormulateView onLaunch={launchPact} />}
       {view === "manifesto" && <ManifestoView />}
 

@@ -112,6 +112,8 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     error PactNotFound();
     error RecruitmentClosed();
     error RecruitmentStillOpen();
+    error NotPactCreator();
+    error NotEnoughMembers();
     error PactFull();
     error AlreadyMember();
     error InvalidInvite();
@@ -148,6 +150,7 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     event MemberEnrolled(uint256 indexed pactId, address indexed participant);
     event MemberFunded(uint256 indexed pactId, address indexed participant, uint128 stakeAmount);
     event MemberDeclined(uint256 indexed pactId, address indexed participant);
+    event RecruitmentClosedEarly(uint256 indexed pactId, address indexed creator, uint40 scheduledEndsAt);
     event PactActivated(uint256 indexed pactId, uint32 startLocalDay, uint32 endLocalDay, uint16 fundedCount);
     event PactCancelled(uint256 indexed pactId, uint16 fundedCount);
     event Completed(
@@ -268,6 +271,28 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         if (pact.status != PactStatus.Activating) revert ActivationIncomplete();
         if (limit == 0 || limit > MAX_ACTIVATION_BATCH) revert InvalidBatchSize();
 
+        _activateMembers(pactId, pact, limit);
+    }
+
+    /// @notice Lets the creator close recruitment and sign with every currently enrolled member.
+    /// @dev This intentionally processes at most MAX_MEMBERS_CAP members in one tightly estimated
+    /// transaction so the product can offer a true one-click early start.
+    function startPactNow(uint256 pactId) external nonReentrant {
+        Pact storage pact = _pact(pactId);
+        if (msg.sender != pact.creator) revert NotPactCreator();
+        if (pact.status != PactStatus.Recruiting || block.timestamp >= pact.recruitmentEndsAt) {
+            revert RecruitmentClosed();
+        }
+        if (pact.memberCount < 2) revert NotEnoughMembers();
+
+        uint40 scheduledEndsAt = pact.recruitmentEndsAt;
+        pact.recruitmentEndsAt = uint40(block.timestamp);
+        pact.status = PactStatus.Activating;
+        emit RecruitmentClosedEarly(pactId, msg.sender, scheduledEndsAt);
+        _activateMembers(pactId, pact, pact.memberCount);
+    }
+
+    function _activateMembers(uint256 pactId, Pact storage pact, uint16 limit) private {
         uint16 end = pact.activationCursor + limit;
         if (end > pact.memberCount) end = pact.memberCount;
         for (uint16 index = pact.activationCursor; index < end; index++) {

@@ -5,13 +5,13 @@
 ```mermaid
 flowchart LR
   A["发起契约\n1–7 天招募"] --> B["成员加入\n记录意向 + ERC-20 授权"]
-  B --> C["招募截止\nKeeper 分批 transferFrom"]
+  B --> C["到期或发起人立即开始\ntransferFrom 当前成员"]
   C --> D["正式签约\n仅保留成功划转成员"]
   D --> E["每日 23:00–24:00\n平台验真 + 证明代提交"]
   E --> F["到期结算\n本金 + yieldPool + 本队违约分润"]
 ```
 
-`MoncastProtocol.activateMembers()` 每批最多处理 24 人。没有余额或已撤销授权的成员会被排除，不会阻塞整队。最终不足 2 名有效成员时契约取消，已划转成员可自行退款。
+到期签约由 `MoncastProtocol.activateMembers()` 每批最多处理 24 人；发起人也可调用 `startPactNow()`，在一笔紧密估算 Gas 的交易中关闭招募并处理全部当前成员。没有余额或已撤销授权的成员会被排除，不会阻塞整队。最终不足 2 名有效成员时契约取消，已划转成员可自行退款。
 
 ## 信任边界
 
@@ -41,4 +41,4 @@ flowchart LR
 
 ## 事件与索引
 
-建议生产索引：`PactCreated`、`MemberEnrolled`、`MemberFunded`、`MemberDeclined`、`PactActivated`、`Completed`、`MemberLiquidated`、`PactFinalized`、`RewardClaimed`。当前本地广场通过链上事件验证后的轻量登记文件提供数据。
+建议生产索引：`PactCreated`、`MemberEnrolled`、`RecruitmentClosedEarly`、`MemberFunded`、`MemberDeclined`、`PactActivated`、`Completed`、`MemberLiquidated`、`PactFinalized`、`RewardClaimed`。当前本地广场通过链上事件验证后的轻量登记文件提供数据。

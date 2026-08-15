@@ -12,10 +12,12 @@ const lifecycleText: Record<PactLifecycle, string> = {
   unknown: "SYNCING",
 };
 
-export function MyPactsView({ pacts = [], checkedIds, onCheckIn, onFormulate }: {
+export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn, onStartNow, onFormulate }: {
   pacts?: PactSummary[];
   checkedIds: Set<string>;
+  startingPactId?: string;
   onCheckIn: (pact: PactSummary) => void;
+  onStartNow: (pact: PactSummary) => Promise<void>;
   onFormulate: () => void;
 }) {
   const activePacts = pacts.filter((pact) => pact.lifecycle === "active");
@@ -49,6 +51,8 @@ export function MyPactsView({ pacts = [], checkedIds, onCheckIn, onFormulate }: 
             {pacts.map((pact, index) => {
               const checked = checkedIds.has(pact.id);
               const executable = pact.lifecycle === "active";
+              const canStartNow = pact.lifecycle === "recruiting" && pact.isCreator;
+              const starting = startingPactId === pact.id;
               return (
                 <article className="commitment-row" key={pact.id}>
                   <div className="commitment-index">{String(index + 1).padStart(2, "0")}</div>
@@ -61,6 +65,7 @@ export function MyPactsView({ pacts = [], checkedIds, onCheckIn, onFormulate }: 
                   </div>
                   <div className="commitment-action">
                     <span><Icon name="shield" /> {lifecycleText[pact.lifecycle]}</span>
+                    {canStartNow && <button className="button primary" title={pact.members < 2 ? "至少需要 2 名成员" : undefined} disabled={Boolean(startingPactId) || pact.members < 2} onClick={() => void onStartNow(pact)}>{starting ? "开始中" : "立即开始"}</button>}
                     {executable && <button className={checked ? "button ghost" : "button primary"} onClick={() => onCheckIn(pact)}>{checked ? "查看证明" : "完成契约"}</button>}
                   </div>
                 </article>

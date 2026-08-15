@@ -50,6 +50,7 @@ test("Moncast contracts compile and expose recruitment, completion and settlemen
     "createPact",
     "joinPact",
     "activateMembers",
+    "startPactNow",
     "complete",
     "completeFor",
     "liquidate",
@@ -64,6 +65,7 @@ test("Moncast contracts compile and expose recruitment, completion and settlemen
     protocol.abi.filter((entry) => entry.type === "event").map((entry) => entry.name),
   );
   assert.ok(events.has("PactActivated"));
+  assert.ok(events.has("RecruitmentClosedEarly"));
   assert.ok(events.has("Completed"));
   assert.ok(events.has("MemberLiquidated"));
   assert.ok(events.has("RewardClaimed"));
