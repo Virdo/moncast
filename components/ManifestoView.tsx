@@ -34,7 +34,7 @@ export function ManifestoView() {
         <div className="manifesto-section-head"><span>02 / ECONOMIC MODEL</span><h2>惩罚留在战队，奖励回到行动者。</h2></div>
         <div className="economics-grid">
           <div className="economics-formula"><span className="eyebrow">SUCCESSFUL MEMBER PAYOUT</span><div><b>本金</b><i>+</i><b>实际质押收益</b><i>+</i><b className="lime">本队违约分润</b></div><p>没有隐藏的协议抽水，也不承诺固定年化。所有可领取金额以合约已到账余额为准。</p></div>
-          <article><span className="icon-frame"><Icon name="pool" /></span><h3>动力保证金</h3><p>30 / 50 / 100 / 200 USDC。成员加入时等额锁定，成功后 100% 返还本金。</p><code>LOCK_STATUS: IMMUTABLE</code></article>
+          <article><span className="icon-frame"><Icon name="pool" /></span><h3>动力保证金</h3><p>支持 1–1,000,000 USDC 自定义整数金额。招募结束后统一划转，成功后 100% 返还本金。</p><code>LOCK_STATUS: IMMUTABLE</code></article>
           <article><span className="icon-frame error-frame"><Icon name="warning" /></span><h3>48h 无许可清算</h3><p>连续 48 小时无有效证明即可被任何人清算，罚没金只进入本契约战友池。</p><code>KEEPER: PERMISSIONLESS</code></article>
           <article><span className="icon-frame blue-frame"><Icon name="trend" /></span><h3>按成员懒结算</h3><p>不在周期结束时遍历整队；任何人逐个处理，避免大队伍因 Gas 上限无法结算。</p><code>SETTLEMENT: O(1) / MEMBER</code></article>
           <article><span className="icon-frame"><Icon name="shield" /></span><h3>Gas 上限即成本</h3><p>Monad 按提交的 gas limit 计费。界面只加小缓冲，并把上限成本在签名前展示。</p><code>BUFFER: ≤ 10%</code></article>

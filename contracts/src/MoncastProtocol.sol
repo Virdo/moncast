@@ -15,13 +15,15 @@ import {ICommitmentVerifier} from "./ICommitmentVerifier.sol";
 contract MoncastProtocol is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
-    uint16 public constant PROTOCOL_VERSION = 2;
+    uint16 public constant PROTOCOL_VERSION = 3;
     uint40 public constant MIN_RECRUITMENT = 1 hours;
     uint40 public constant MAX_RECRUITMENT = 7 days;
     uint40 public constant COMPLETION_GRACE = 48 hours;
     uint16 public constant MAX_MEMBERS_CAP = 128;
     uint16 public constant MAX_ACTIVATION_BATCH = 24;
     uint256 public constant USDC_UNIT = 1e6;
+    uint128 public constant MIN_STAKE = uint128(1 * USDC_UNIT);
+    uint128 public constant MAX_STAKE = uint128(1_000_000 * USDC_UNIT);
 
     bytes32 public constant INVITE_TYPEHASH = keccak256(
         "Invite(uint256 pactId,address participant,uint256 nonce,uint256 deadline)"
@@ -520,7 +522,6 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     }
 
     function _isAllowedStake(uint128 amount) private pure returns (bool) {
-        return amount == 30 * USDC_UNIT || amount == 50 * USDC_UNIT || amount == 100 * USDC_UNIT
-            || amount == 200 * USDC_UNIT;
+        return amount >= MIN_STAKE && amount <= MAX_STAKE && amount % USDC_UNIT == 0;
     }
 }

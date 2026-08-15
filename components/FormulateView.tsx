@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { GoalType } from "@/lib/pacts";
+import { MAX_STAKE_USDC, MIN_STAKE_USDC, validStakeAmount } from "@/lib/stake";
 import { Icon } from "./Icon";
 
 export type LaunchPactInput = {
@@ -13,7 +14,7 @@ export type LaunchPactInput = {
   rule: string;
   duration: 7 | 14 | 30;
   recruitmentDays: number;
-  stake: 30 | 50 | 100 | 200;
+  stake: number;
   maxMembers: number;
 };
 
@@ -33,15 +34,13 @@ export function FormulateView({ onLaunch }: { onLaunch: (input: LaunchPactInput)
   const [rule, setRule] = useState("daily_ac >= 1");
   const [duration, setDuration] = useState<7 | 14 | 30>(14);
   const [recruitmentDays, setRecruitmentDays] = useState(3);
-  const [stake, setStake] = useState<30 | 50 | 100 | 200>(100);
+  const [stake, setStake] = useState(20);
   const [maxMembers, setMaxMembers] = useState(24);
   const [shareUrl, setShareUrl] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [profileSummary, setProfileSummary] = useState("");
-
-  const fee = useMemo(() => (stake * maxMembers * 0.001).toFixed(2), [stake, maxMembers]);
 
   async function verifyAccount() {
     if (handle.trim().length < 2) {
@@ -89,6 +88,10 @@ export function FormulateView({ onLaunch }: { onLaunch: (input: LaunchPactInput)
         setError("请填写可判定的达标规则。");
         return;
       }
+    }
+    if (!validStakeAmount(stake)) {
+      setError(`单人保证金请输入 ${MIN_STAKE_USDC}–${MAX_STAKE_USDC.toLocaleString()} USDC 的整数。`);
+      return;
     }
     setError("");
     setBusy(true);
@@ -149,7 +152,7 @@ export function FormulateView({ onLaunch }: { onLaunch: (input: LaunchPactInput)
             <label className="range-field"><span>招募时间 <strong>{recruitmentDays} 天</strong><small>最长 7 天；结束后统一签约扣款</small></span><input type="range" min="1" max="7" value={recruitmentDays} onChange={(event) => setRecruitmentDays(Number(event.target.value))} /></label>
             <div className="parameter-row">
               <div><span>周期</span><div className="segment-control">{([7, 14, 30] as const).map((days) => <button type="button" key={days} className={duration === days ? "active" : ""} onClick={() => setDuration(days)}>{days} 天</button>)}</div></div>
-              <div><span>单人保证金</span><div className="segment-control">{([30, 50, 100, 200] as const).map((amount) => <button type="button" key={amount} className={stake === amount ? "active" : ""} onClick={() => setStake(amount)}>{amount}</button>)}</div></div>
+              <div className="stake-parameter"><span>单人保证金</span><div className="segment-control">{([10, 20, 30, 50, 100] as const).map((amount) => <button type="button" key={amount} className={stake === amount ? "active" : ""} onClick={() => setStake(amount)}>{amount}</button>)}</div><label className="stake-input"><span>自定义</span><input aria-label="自定义单人保证金" type="number" inputMode="numeric" min={MIN_STAKE_USDC} max={MAX_STAKE_USDC} step="1" value={stake || ""} onChange={(event) => setStake(Number(event.target.value))} /><b>USDC</b></label><small>MON 仅支付 Gas；保证金使用测试网 USDC。<a href="https://faucet.circle.com/" target="_blank" rel="noreferrer">领取 20 USDC ↗</a></small></div>
             </div>
             <label className="range-field"><span>战队人数上限 <strong>{maxMembers}</strong></span><input type="range" min="2" max="128" value={maxMembers} onChange={(event) => setMaxMembers(Number(event.target.value))} /></label>
           </fieldset>
@@ -174,7 +177,7 @@ export function FormulateView({ onLaunch }: { onLaunch: (input: LaunchPactInput)
               <div><dt>SLASH</dt><dd>48H NO PROOF</dd></div>
             </dl>
             <div className="preview-note"><Icon name="shield" /><span>链上存储 metadataHash / ruleHash / nullifier。用户名、URL 与原始数据保持链下。</span></div>
-            <footer><span>EST. MAX GAS LIMIT COST</span><strong>≈ {fee} MON-GWEI*</strong><small>*按 gas limit 展示，避免高估上限让 Monad 用户多付费</small></footer>
+            <footer><span>MONAD GAS</span><strong>交易前实时估算</strong><small>Gas 使用 MON；客户端按调用估算并最多增加 10% gas limit 缓冲</small></footer>
           </div>
           {shareUrl && <div className="share-result"><span className="eyebrow">PACT LAUNCHED</span><strong>招募链接已生成</strong><code>{shareUrl}</code><button className="button primary full" type="button" onClick={copyShare}>{copied ? "已复制" : "复制链接"}<Icon name="copy" /></button></div>}
         </aside>

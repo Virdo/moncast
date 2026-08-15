@@ -19,7 +19,7 @@ export type RegisteredPact = {
   durationDays: 7 | 14 | 30;
   recruitmentDays: number;
   recruitmentEndsAt: number;
-  stake: 30 | 50 | 100 | 200;
+  stake: number;
   maxMembers: number;
   utcOffsetMinutes: number;
   isPrivate: boolean;

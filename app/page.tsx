@@ -14,6 +14,7 @@ import { pacts, type GoalType, type PactLifecycle, type PactSummary, type ViewNa
 import {
   collateralTokenAbi,
   collateralTokenAddress,
+  assertCustomStakeSupport,
   assertEarlyStartSupport,
   commitmentHash,
   inviteAuthorityAddress,
@@ -24,6 +25,7 @@ import {
   writeWithTightGas,
 } from "@/lib/moncast-chain";
 import { useMoncastWallet } from "@/lib/use-moncast-wallet";
+import { stakeAmountUnits, validStakeAmount } from "@/lib/stake";
 
 type RegistryPact = {
   protocolAddress: Address;
@@ -35,7 +37,7 @@ type RegistryPact = {
   durationDays: 7 | 14 | 30;
   recruitmentDays: number;
   recruitmentEndsAt: number;
-  stake: 30 | 50 | 100 | 200;
+  stake: number;
   maxMembers: number;
   isPrivate: boolean;
   members: Array<{ address: Address; username: string }>;
@@ -185,7 +187,9 @@ export default function Home() {
     if (!account || !wallet.provider) throw new Error("请先连接个人钱包。");
     if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置，请先完成部署并重启服务。");
     if (!collateralTokenAddress) throw new Error("测试网 USDC 地址未配置，请填写水龙头对应的代币合约地址。");
-    const stakeAmount = BigInt(input.stake) * 1_000_000n;
+    if (!validStakeAmount(input.stake)) throw new Error("请输入 1–1,000,000 USDC 的整数保证金。");
+    await assertCustomStakeSupport();
+    const stakeAmount = stakeAmountUnits(input.stake);
     setToast(`请授权 ${input.stake} USDC，招募结束后才会划转`);
     await writeWithTightGas(wallet.provider, account, collateralTokenAddress, collateralTokenAbi, "approve", [moncastAddress, stakeAmount]);
 

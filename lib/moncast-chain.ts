@@ -64,6 +64,22 @@ export const inviteAuthorityAddress = configuredAddress(process.env.NEXT_PUBLIC_
 export const publicClient = createPublicClient({ chain: monadTestnet, transport: http(monadTestnet.rpcUrls.default.http[0]) });
 
 export async function assertEarlyStartSupport() {
+  const version = await readProtocolVersion();
+  if (version < 2) {
+    throw new Error("当前契约属于旧版主协议，不支持立即开始。请部署新版主协议后重新发起契约；旧契约仍可等待招募结束后自动签订。");
+  }
+  return version;
+}
+
+export async function assertCustomStakeSupport() {
+  const version = await readProtocolVersion();
+  if (version < 3) {
+    throw new Error("当前主协议仅支持固定保证金档位。请部署支持自定义金额的 MoncastProtocol v3 后重新发起契约。");
+  }
+  return version;
+}
+
+async function readProtocolVersion() {
   if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
   let version: number;
   try {
@@ -78,9 +94,6 @@ export async function assertEarlyStartSupport() {
       ? ("shortMessage" in cause && typeof cause.shortMessage === "string" ? cause.shortMessage : cause.message)
       : "未知 RPC 错误";
     throw new Error(`无法读取当前 Moncast 协议版本（${moncastAddress}）。请检查 RPC 与本地环境配置：${detail}`);
-  }
-  if (version < 2) {
-    throw new Error("当前契约属于旧版主协议，不支持立即开始。请部署新版主协议后重新发起契约；旧契约仍可等待招募结束后自动签订。");
   }
   return version;
 }

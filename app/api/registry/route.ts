@@ -2,6 +2,7 @@ import { parseEventLogs, type Address, type Hash } from "viem";
 import { moncastAddress, protocolAbi, publicClient } from "@/lib/moncast-chain";
 import { readProtocolPacts, registerMember, registerPact, type RegisteredPact } from "@/lib/server/registry";
 import { validProviderHandle } from "@/lib/provider-verification";
+import { validStakeAmount } from "@/lib/stake";
 
 function address(value: unknown): value is Address {
   return typeof value === "string" && /^0x[a-fA-F0-9]{40}$/.test(value);
@@ -51,12 +52,14 @@ export async function POST(request: Request) {
     if (platform !== "custom" && !validProviderHandle(body.username)) {
       return Response.json({ error: "INVALID_USERNAME" }, { status: 400 });
     }
+    const stake = Number(body.stake);
+    if (!validStakeAmount(stake)) return Response.json({ error: "INVALID_STAKE" }, { status: 400 });
     const registered: RegisteredPact = {
       protocolAddress: moncastAddress, id: String(pactId), creator: body.address, title: String(body.title ?? "未命名契约").slice(0, 48),
       description: String(body.description ?? "").slice(0, 240), platform,
       rule: String(body.rule ?? "").slice(0, 160), durationDays: Number(body.durationDays) as 7 | 14 | 30,
       recruitmentDays: Math.min(7, Math.max(1, Number(body.recruitmentDays))),
-      recruitmentEndsAt: Number(body.recruitmentEndsAt), stake: Number(body.stake) as 30 | 50 | 100 | 200,
+      recruitmentEndsAt: Number(body.recruitmentEndsAt), stake,
       maxMembers: Number(body.maxMembers), utcOffsetMinutes: Number(body.utcOffsetMinutes) || 480,
       isPrivate: Boolean(body.isPrivate), inviteCode: typeof body.inviteCode === "string" ? body.inviteCode.slice(0, 64) : undefined,
       createdTx: body.transactionHash,
