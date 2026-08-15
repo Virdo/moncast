@@ -58,14 +58,14 @@ function configuredAddress(value: string | undefined) {
 }
 
 export const moncastAddress = configuredAddress(
-  process.env.NEXT_PUBLIC_MONCAST_CONTRACT_ADDRESS ?? monadTestnetDeployments.protocol,
-);
+  process.env.NEXT_PUBLIC_MONCAST_CONTRACT_ADDRESS,
+) ?? monadTestnetDeployments.protocol;
 export const collateralTokenAddress = configuredAddress(
-  process.env.NEXT_PUBLIC_USDC_ADDRESS ?? monadTestnetDeployments.collateralToken,
-);
+  process.env.NEXT_PUBLIC_USDC_ADDRESS,
+) ?? monadTestnetDeployments.collateralToken;
 export const verifierAddress = configuredAddress(
-  process.env.NEXT_PUBLIC_VERIFIER_ADDRESS ?? monadTestnetDeployments.verifier,
-);
+  process.env.NEXT_PUBLIC_VERIFIER_ADDRESS,
+) ?? monadTestnetDeployments.verifier;
 export const inviteAuthorityAddress = configuredAddress(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS);
 
 export const publicClient = createPublicClient({ chain: monadTestnet, transport: http(monadTestnet.rpcUrls.default.http[0]) });

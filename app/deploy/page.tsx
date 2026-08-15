@@ -10,8 +10,8 @@ type ArtifactSet = { AttestedProofVerifier: Artifact; MoncastProtocol: Artifact 
 
 export default function DeployPage() {
   const [attestor, setAttestor] = useState(process.env.NEXT_PUBLIC_INVITE_AUTHORITY_ADDRESS ?? "");
-  const [collateral, setCollateral] = useState(collateralTokenAddress ?? "");
-  const [verifier, setVerifier] = useState(verifierAddress ?? "");
+  const [collateral, setCollateral] = useState<string>(collateralTokenAddress ?? "");
+  const [verifier, setVerifier] = useState<string>(verifierAddress ?? "");
   const [status, setStatus] = useState("首次部署需要 2 笔交易；已有验证器时可仅更新主协议，需 1 笔交易。");
   const [addresses, setAddresses] = useState<{ usdc?: Address; verifier?: Address; protocol?: Address }>({
     usdc: /^0x[a-fA-F0-9]{40}$/.test(collateral) ? collateral as Address : undefined,
