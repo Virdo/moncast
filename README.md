@@ -25,8 +25,8 @@ npm run dev
 
 - USDC：[`0x534b…943A3`](https://testnet.monadscan.com/address/0x534b2f3A21130d7a60830c2Df862319e593943A3)
 - AttestedProofVerifier：[`0x3286…56ed1`](https://testnet.monadscan.com/address/0x32867799f03d56aac4D2A900e4b9B4404A056ed1)
-- MoncastProtocol v4：[`0x2d75…2d964`](https://testnet.monadscan.com/address/0x2d750e231f187becf1dcbe69b50c9e066412d964)
-- 部署交易：[`0x510a…42a10`](https://testnet.monadscan.com/tx/0x510a2039c1d68a427ab21f7933db2babcce8ddd5fe1b76ca30b2ea3cd3d42a10)
+- MoncastProtocol v5：[`0xc877…279f9`](https://testnet.monadscan.com/address/0xc877e04102e5e931700cd7629f47fca1d4c279f9)
+- 部署交易：[`0xed87…75d0d`](https://testnet.monadscan.com/tx/0xed87d1266979aa92373575b469caa1fa7da1a146f01f3b30e2f74fb308075d0d)
 
 完整部署记录见 [`deployments/monad-testnet.json`](deployments/monad-testnet.json)。
 
@@ -42,7 +42,7 @@ npm run dev -- --port 3003
 4. 重启开发服务器。
 5. 给 `.env.local` 中的 relayer 地址少量测试网 MON，供招募激活和 23:00 自动完成交易使用。
 
-合约功能更新且验证器未变化时，可在 `/deploy` 使用“仅更新主协议”，只需确认 1 笔部署交易。发起人可在“我的契约”中通过“立即开始”提前关闭招募；该交易会按当前成员的授权情况划转保证金并直接进入执行或取消状态。
+合约功能更新且验证器未变化时，可在 `/deploy` 使用“仅更新主协议”，只需确认 1 笔部署交易。发起人可在“我的契约”中通过“立即开始”提前关闭招募；该交易会尝试划转当前成员保证金，余额不足的成员在测试网 v5 中会以不参与资金结算的演示身份进入执行期，仍可完成每日手动打卡与证明。
 
 Moncast 不内置测试币或自动领币逻辑；测试资产由用户自行从水龙头获取。
 

@@ -15,7 +15,7 @@ import {ICommitmentVerifier} from "./ICommitmentVerifier.sol";
 contract MoncastProtocol is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
-    uint16 public constant PROTOCOL_VERSION = 4;
+    uint16 public constant PROTOCOL_VERSION = 5;
     uint40 public constant MIN_RECRUITMENT = 1 hours;
     uint40 public constant MAX_RECRUITMENT = 7 days;
     uint40 public constant COMPLETION_GRACE = 48 hours;
@@ -46,7 +46,8 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         Succeeded,
         Slashed,
         Claimed,
-        Refunded
+        Refunded,
+        DemoSucceeded
     }
 
     struct PactConfig {
@@ -103,6 +104,9 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     mapping(uint256 pactId => address[] participants) private _memberList;
     mapping(uint256 pactId => mapping(address participant => mapping(uint32 epoch => bool completed)))
         public completedEpoch;
+    mapping(uint256 pactId => mapping(address participant => bool enabled)) public demoMember;
+    mapping(uint256 pactId => uint16 count) public demoMemberCount;
+    mapping(uint256 pactId => uint16 count) public demoProcessedCount;
     mapping(bytes32 nullifier => bool used) public usedNullifiers;
     mapping(uint256 pactId => mapping(uint256 nonce => bool used)) public usedInviteNonces;
 
@@ -152,6 +156,8 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     event MemberEnrolled(uint256 indexed pactId, address indexed participant);
     event MemberFunded(uint256 indexed pactId, address indexed participant, uint128 stakeAmount);
     event MemberDeclined(uint256 indexed pactId, address indexed participant);
+    event DemoMemberActivated(uint256 indexed pactId, address indexed participant);
+    event DemoMemberSettled(uint256 indexed pactId, address indexed participant, bool succeeded);
     event RecruitmentClosedEarly(uint256 indexed pactId, address indexed creator, uint40 scheduledEndsAt);
     event PactActivated(uint256 indexed pactId, uint32 startLocalDay, uint32 endLocalDay, uint16 fundedCount);
     event PactCancelled(uint256 indexed pactId, uint16 fundedCount);
@@ -273,12 +279,14 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         if (pact.status != PactStatus.Activating) revert ActivationIncomplete();
         if (limit == 0 || limit > MAX_ACTIVATION_BATCH) revert InvalidBatchSize();
 
-        _activateMembers(pactId, pact, limit);
+        _activateMembers(pactId, pact, limit, false);
     }
 
     /// @notice Lets the creator close recruitment and sign with every currently enrolled member.
     /// @dev This intentionally processes at most MAX_MEMBERS_CAP members in one tightly estimated
-    /// transaction so the product can offer a true one-click early start.
+    /// transaction so the product can offer a true one-click early start. On testnet, enrolled
+    /// wallets that cannot fund USDC become non-financial demo members: they can submit proofs,
+    /// but never create principal, rewards, or slash-pool accounting.
     function startPactNow(uint256 pactId) external nonReentrant {
         Pact storage pact = _pact(pactId);
         if (msg.sender != pact.creator) revert NotPactCreator();
@@ -289,10 +297,10 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         pact.recruitmentEndsAt = uint40(block.timestamp);
         pact.status = PactStatus.Activating;
         emit RecruitmentClosedEarly(pactId, msg.sender, scheduledEndsAt);
-        _activateMembers(pactId, pact, pact.memberCount);
+        _activateMembers(pactId, pact, pact.memberCount, true);
     }
 
-    function _activateMembers(uint256 pactId, Pact storage pact, uint16 limit) private {
+    function _activateMembers(uint256 pactId, Pact storage pact, uint16 limit, bool allowDemoFallback) private {
         uint16 end = pact.activationCursor + limit;
         if (end > pact.memberCount) end = pact.memberCount;
         for (uint16 index = pact.activationCursor; index < end; index++) {
@@ -304,6 +312,12 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
                 member.lastCompletedAt = uint40(block.timestamp);
                 pact.fundedCount += 1;
                 emit MemberFunded(pactId, participant, pact.stakeAmount);
+            } else if (allowDemoFallback) {
+                member.state = MemberState.Active;
+                member.lastCompletedAt = uint40(block.timestamp);
+                demoMember[pactId][participant] = true;
+                demoMemberCount[pactId] += 1;
+                emit DemoMemberActivated(pactId, participant);
             } else {
                 member.state = MemberState.Declined;
                 emit MemberDeclined(pactId, participant);
@@ -360,7 +374,14 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         Member storage member = members[pactId][participant];
         if (pact.status != PactStatus.Active || member.state != MemberState.Active) revert NotActiveMember();
         if (block.timestamp <= uint256(member.lastCompletedAt) + COMPLETION_GRACE) revert GracePeriodActive();
-        _slash(pactId, pact, member, participant);
+        if (demoMember[pactId][participant]) {
+            member.state = MemberState.Slashed;
+            demoProcessedCount[pactId] += 1;
+            emit DemoMemberSettled(pactId, participant, false);
+            emit MemberSettled(pactId, participant, false);
+        } else {
+            _slash(pactId, pact, member, participant);
+        }
     }
 
     function settleMember(uint256 pactId, address participant) external {
@@ -371,7 +392,13 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         Member storage member = members[pactId][participant];
         if (member.state != MemberState.Active) revert MemberAlreadyProcessed();
 
-        if (member.completions == pact.durationDays) {
+        if (demoMember[pactId][participant]) {
+            bool succeeded = member.completions == pact.durationDays;
+            member.state = succeeded ? MemberState.DemoSucceeded : MemberState.Slashed;
+            demoProcessedCount[pactId] += 1;
+            emit DemoMemberSettled(pactId, participant, succeeded);
+            emit MemberSettled(pactId, participant, succeeded);
+        } else if (member.completions == pact.durationDays) {
             member.state = MemberState.Succeeded;
             pact.successfulCount += 1;
             pact.processedCount += 1;
@@ -387,7 +414,10 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
         if (pact.status != PactStatus.Active || _localDay(pact.utcOffsetMinutes) < pact.endLocalDay) {
             revert SettlementNotOpen();
         }
-        if (pact.processedCount != pact.fundedCount) revert SettlementIncomplete();
+        if (
+            pact.processedCount != pact.fundedCount
+                || demoProcessedCount[pactId] != demoMemberCount[pactId]
+        ) revert SettlementIncomplete();
 
         pact.status = PactStatus.Finalized;
         if (pact.successfulCount == 0) {
@@ -469,9 +499,9 @@ contract MoncastProtocol is ReentrancyGuard, EIP712 {
     }
 
     function _finishActivation(uint256 pactId, Pact storage pact) private {
-        // Demo-friendly solo pacts are valid. Cancellation is reserved for the
-        // case where no enrolled wallet can fund its approved collateral.
-        if (pact.fundedCount == 0) {
+        // Scheduled activation still cancels when nobody funds. Creator-triggered
+        // early activation can instead include explicitly non-financial demo members.
+        if (pact.fundedCount == 0 && demoMemberCount[pactId] == 0) {
             pact.status = PactStatus.Cancelled;
             emit PactCancelled(pactId, pact.fundedCount);
             return;

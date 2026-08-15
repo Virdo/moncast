@@ -321,7 +321,7 @@ export default function Home() {
       if (!moncastAddress) throw new Error("Moncast 测试网协议地址未配置。");
       if (!pact.isCreator) throw new Error("只有契约发起人可以立即开始。");
       await assertEarlyStartSupport();
-      setToast("请确认立即开始交易；单人契约也会直接进入执行期");
+      setToast("请确认立即开始交易；USDC 不足的成员将以测试网演示身份进入执行期");
       const { receipt } = await writeWithTightGas(wallet.provider, account, moncastAddress, protocolAbi, "startPactNow", [BigInt(pact.id)]);
       const activated = parseEventLogs({ abi: protocolAbi, logs: receipt.logs, eventName: "PactActivated", strict: true })
         .some((event) => event.args.pactId === BigInt(pact.id));
@@ -329,7 +329,7 @@ export default function Home() {
         .some((event) => event.args.pactId === BigInt(pact.id));
       await refreshRegistry();
       if (activated) setToast(`契约 #${pact.id} 已停止招募并开始执行`);
-      else if (cancelled) setToast("有效授权成员不足 2 人，契约已取消；已扣款成员可取回保证金");
+      else if (cancelled) setToast("没有成员成功划转 USDC 保证金，契约已取消");
       else setToast("交易已确认，正在同步契约状态");
     } catch (cause) {
       setToast(cause instanceof Error ? cause.message : "立即开始失败");

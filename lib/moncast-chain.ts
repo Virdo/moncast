@@ -34,6 +34,7 @@ export const protocolAbi = parseAbi([
   "function complete(uint256 pactId,uint32 epoch,bytes32 nullifier,bytes32 publicInputsHash,bytes proof)",
   "function completeFor(uint256 pactId,address participant,uint32 epoch,bytes32 nullifier,bytes32 publicInputsHash,bytes proof)",
   "function currentEpoch(uint256 pactId) view returns (uint32 epoch,bool completionOpen)",
+  "function memberList(uint256 pactId) view returns (address[] participants)",
   "function pacts(uint256 pactId) view returns (address creator,address inviteAuthority,bytes32 metadataHash,bytes32 ruleHash,uint40 recruitmentEndsAt,uint32 startLocalDay,uint32 endLocalDay,uint128 stakeAmount,uint128 slashPool,uint128 yieldPool,uint128 claimedBonus,uint16 maxMembers,uint16 memberCount,uint16 activationCursor,uint16 fundedCount,uint16 processedCount,uint16 successfulCount,uint16 claimedSuccesses,uint8 durationDays,int16 utcOffsetMinutes,bool isPrivate,uint8 status)",
   "function completedEpoch(uint256 pactId,address participant,uint32 epoch) view returns (bool)",
   "function members(uint256 pactId,address participant) view returns (uint40 enrolledAt,uint40 lastCompletedAt,uint16 completions,uint8 state)",
@@ -73,8 +74,8 @@ export const publicClient = createPublicClient({ chain: monadTestnet, transport:
 
 export async function assertEarlyStartSupport() {
   const version = await readProtocolVersion();
-  if (version < 4) {
-    throw new Error("当前契约属于旧版主协议，不支持单人立即开始。请在 MoncastProtocol v4 部署后重新发起契约；旧契约无法迁移其链上状态。");
+  if (version < 5) {
+    throw new Error("当前契约属于旧版主协议，不支持无余额演示启动。请在 MoncastProtocol v5 部署后重新发起契约；旧契约无法迁移其链上状态。");
   }
   return version;
 }

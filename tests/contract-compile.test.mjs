@@ -35,11 +35,13 @@ const input = {
   },
 };
 
-test("v4 permits a funded solo pact to start immediately", () => {
+test("v5 lets an early-start pact fall back to non-financial demo members", () => {
   const source = readFileSync(resolve(root, "contracts/src/MoncastProtocol.sol"), "utf8");
-  assert.match(source, /PROTOCOL_VERSION\s*=\s*4/);
+  assert.match(source, /PROTOCOL_VERSION\s*=\s*5/);
   assert.doesNotMatch(source, /memberCount\s*<\s*2/);
-  assert.match(source, /fundedCount\s*==\s*0/);
+  assert.match(source, /allowDemoFallback/);
+  assert.match(source, /demoMemberCount\[pactId\]/);
+  assert.match(source, /MemberState\.DemoSucceeded/);
 });
 
 test("Moncast contracts compile and expose recruitment, completion and settlement", () => {
@@ -74,6 +76,8 @@ test("Moncast contracts compile and expose recruitment, completion and settlemen
   );
   assert.ok(events.has("PactActivated"));
   assert.ok(events.has("RecruitmentClosedEarly"));
+  assert.ok(events.has("DemoMemberActivated"));
+  assert.ok(events.has("DemoMemberSettled"));
   assert.ok(events.has("Completed"));
   assert.ok(events.has("MemberLiquidated"));
   assert.ok(events.has("RewardClaimed"));
