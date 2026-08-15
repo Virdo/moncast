@@ -26,22 +26,8 @@ import {
 } from "@/lib/moncast-chain";
 import { useMoncastWallet } from "@/lib/use-moncast-wallet";
 import { stakeAmountUnits, validStakeAmount } from "@/lib/stake";
-
-type RegistryPact = {
-  protocolAddress: Address;
-  id: string;
-  creator: Address;
-  title: string;
-  platform: GoalType;
-  rule: string;
-  durationDays: 7 | 14 | 30;
-  recruitmentDays: number;
-  recruitmentEndsAt: number;
-  stake: number;
-  maxMembers: number;
-  isPrivate: boolean;
-  members: Array<{ address: Address; username: string }>;
-};
+import { mergeRegistryPacts, readLocalPacts, saveLocalPact } from "@/lib/client-registry";
+import type { RegistryPact } from "@/lib/registry-types";
 
 function shortAddress(value?: string) {
   return value ? `${value.slice(0, 6)}…${value.slice(-4)}` : "";
@@ -80,16 +66,28 @@ function toSummary(pact: RegistryPact, account?: Address, chainLifecycle?: PactL
     lifecycle,
     recruitmentLabel: recruitmentLabel(pact.recruitmentEndsAt),
     stake: pact.stake,
-    pool: pact.members.length * pact.stake,
+    pool: (pact.memberCount ?? pact.members.length) * pact.stake,
     slashPool: 0,
     slashYield: recruiting ? "待签订" : "自动验真中",
-    members: pact.members.length,
+    members: pact.memberCount ?? pact.members.length,
     maxMembers: pact.maxMembers,
     rule: pact.rule,
     platformHandleHint: pact.platform === "leetcode" ? "LeetCode 用户名" : pact.platform === "duolingo" ? "Duolingo 用户名" : "验真账户",
     avatars: pact.members.slice(0, 4).map((item) => item.username.slice(0, 2).toUpperCase()),
     username: member?.username,
   };
+}
+
+const knownRules = {
+  leetcode: "每日 AC ≥ 1",
+  duolingo: "每日完成 ≥ 1 次学习并延续连胜",
+} as const;
+
+function platformForRuleHash(ruleHash: string): GoalType {
+  for (const platform of ["leetcode", "duolingo"] as const) {
+    if (commitmentHash({ rule: knownRules[platform], apiOrigin: platform }).toLowerCase() === ruleHash.toLowerCase()) return platform;
+  }
+  return "custom";
 }
 
 export default function Home() {
@@ -106,9 +104,9 @@ export default function Home() {
 
   const refreshRegistry = useCallback(async () => {
     const response = await fetch("/api/registry", { cache: "no-store" }).catch(() => null);
-    if (!response?.ok) return;
-    const data = await response.json() as { pacts?: RegistryPact[] };
-    setRegistry(data.pacts ?? []);
+    const data = response?.ok ? await response.json() as { pacts?: RegistryPact[] } : {};
+    const local = moncastAddress ? readLocalPacts(moncastAddress) : [];
+    setRegistry(mergeRegistryPacts(data.pacts ?? [], local));
   }, []);
 
   const livePacts = useMemo(() => registry.map((item) => toSummary(item, wallet.account, chainLifecycles[item.id])), [chainLifecycles, registry, wallet.account]);
@@ -133,6 +131,51 @@ export default function Home() {
     });
     return () => { cancelled = true; };
   }, [registry]);
+
+  useEffect(() => {
+    const configuredProtocol = moncastAddress;
+    const account = wallet.account;
+    if (!configuredProtocol || !account) return;
+    let cancelled = false;
+    void (async () => {
+      const count = Number(await publicClient.readContract({ address: configuredProtocol, abi: protocolAbi, functionName: "pactCount", blockTag: "safe" }));
+      const discovered = (await Promise.all(Array.from({ length: count }, async (_, index) => {
+        const id = BigInt(index + 1);
+        try {
+          const [state, membership] = await Promise.all([
+            publicClient.readContract({ address: configuredProtocol, abi: protocolAbi, functionName: "pacts", args: [id], blockTag: "safe" }),
+            publicClient.readContract({ address: configuredProtocol, abi: protocolAbi, functionName: "members", args: [id, account], blockTag: "safe" }),
+          ]);
+          if (state[0].toLowerCase() !== account.toLowerCase() && Number(membership[3]) === 0) return null;
+          const platform = platformForRuleHash(state[3]);
+          const duration = Number(state[18]);
+          const recovered: RegistryPact = {
+            protocolAddress: configuredProtocol,
+            id: id.toString(),
+            creator: state[0],
+            title: `链上契约 #${id}`,
+            description: "从 Monad 测试网恢复的真实契约",
+            platform,
+            rule: platform === "custom" ? "链上自定义验真规则" : knownRules[platform],
+            durationDays: (duration === 14 || duration === 30 ? duration : 7) as 7 | 14 | 30,
+            recruitmentDays: Math.max(1, Math.min(7, Math.ceil((Number(state[4]) - Date.now() / 1000) / 86_400))),
+            recruitmentEndsAt: Number(state[4]),
+            stake: Number(state[7]) / 1_000_000,
+            maxMembers: Number(state[11]),
+            memberCount: Number(state[12]),
+            utcOffsetMinutes: Number(state[19]),
+            isPrivate: state[20],
+            members: [{ address: account, username: "" }],
+          };
+          return recovered;
+        } catch {
+          return null;
+        }
+      }))).filter((pact): pact is RegistryPact => pact !== null);
+      if (!cancelled) setRegistry((current) => mergeRegistryPacts(discovered, current));
+    })().catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [wallet.account]);
 
   useEffect(() => {
     const configuredProtocol = moncastAddress;
@@ -208,6 +251,27 @@ export default function Home() {
     const [created] = parseEventLogs({ abi: protocolAbi, logs: receipt.logs, eventName: "PactCreated", strict: true });
     if (!created) throw new Error("未找到 PactCreated 链上事件。");
     const pactId = created.args.pactId;
+    const localPact: RegistryPact = {
+      protocolAddress: moncastAddress,
+      id: pactId.toString(),
+      creator: account,
+      title: input.title,
+      description: "",
+      platform: input.target,
+      rule,
+      durationDays: input.duration,
+      recruitmentDays: input.recruitmentDays,
+      recruitmentEndsAt: Number(created.args.recruitmentEndsAt),
+      stake: input.stake,
+      maxMembers: input.maxMembers,
+      memberCount: 1,
+      utcOffsetMinutes: -new Date().getTimezoneOffset(),
+      isPrivate: input.mode === "private",
+      inviteCode,
+      createdTx: hash,
+      members: input.target === "custom" ? [] : [{ address: account, username: input.handle, joinedTx: hash }],
+    };
+    saveLocalPact(localPact);
     const registration = await fetch("/api/registry", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -218,12 +282,36 @@ export default function Home() {
         maxMembers: input.maxMembers, utcOffsetMinutes: -new Date().getTimezoneOffset(),
         isPrivate: input.mode === "private", inviteCode,
       }),
-    });
-    if (!registration.ok) throw new Error("链上契约已创建，但自动验真登记失败，请保存交易哈希。 ");
+    }).catch(() => null);
     await refreshRegistry();
-    setToast(`契约 #${pactId} 已上链并开始招募`);
+    setToast(registration?.ok
+      ? `契约 #${pactId} 已上链并开始招募`
+      : `契约 #${pactId} 已上链；验真资料已安全保存在当前设备`);
     return { shareUrl: pactUrl(pactId, inviteCode), transactionHash: hash as Hash };
   }, [refreshRegistry, wallet]);
+
+  const bindVerificationAccount = useCallback(async (pact: PactSummary) => {
+    const account = wallet.account;
+    if (!account || !moncastAddress || pact.goalType === "custom") return;
+    const username = window.prompt(`为 Pact #${pact.id} 绑定${pact.platformHandleHint}`)?.trim();
+    if (!username) return;
+    const response = await fetch(`/api/verify/${pact.goalType}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username, utcOffsetMinutes: -new Date().getTimezoneOffset() }),
+    });
+    if (!response.ok) {
+      setToast("平台账号查验失败，请确认用户名后重试");
+      return;
+    }
+    const record = registry.find((item) => item.id === pact.id && item.protocolAddress.toLowerCase() === moncastAddress.toLowerCase());
+    if (!record) return;
+    const members = record.members.filter((member) => member.address.toLowerCase() !== account.toLowerCase());
+    const updated = { ...record, members: [...members, { address: account, username }] };
+    saveLocalPact(updated);
+    setRegistry((current) => mergeRegistryPacts(current, [updated]));
+    setToast(`Pact #${pact.id} 验真账号已恢复`);
+  }, [registry, wallet.account]);
 
   const startPactNow = useCallback(async (pact: PactSummary) => {
     setStartingPactId(pact.id);
@@ -259,11 +347,19 @@ export default function Home() {
   return (
     <AppShell view={view} onNavigate={navigate} wallet={shortAddress(wallet.account)} contractsReady={Boolean(moncastAddress && collateralTokenAddress)} onWallet={() => { void wallet.connect(); }} onDisconnect={() => { void wallet.disconnect(); }}>
       {view === "plaza" && <PlazaView livePacts={livePacts} onJoin={(pact) => { setJoinCode(pact.isPrivate ? "" : "OPEN"); setJoinPact(pact); }} onFormulate={() => navigate("formulate")} />}
-      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} startingPactId={startingPactId} onCheckIn={setCheckInPact} onStartNow={startPactNow} onFormulate={() => navigate("formulate")} />}
+      {view === "mine" && <MyPactsView pacts={myPacts} checkedIds={checkedIds} startingPactId={startingPactId} onCheckIn={setCheckInPact} onStartNow={startPactNow} onBindAccount={bindVerificationAccount} onFormulate={() => navigate("formulate")} />}
       {view === "formulate" && <FormulateView onLaunch={launchPact} />}
       {view === "manifesto" && <ManifestoView />}
 
-      {joinPact && <JoinModal pact={joinPact} inviteCode={joinCode} account={wallet.account} provider={wallet.provider} onWallet={wallet.connect} onClose={() => { setJoinPact(null); const url = new URL(window.location.href); url.search = ""; window.history.replaceState({}, "", url); }} onJoined={async () => { await refreshRegistry(); setToast("已加入招募；保证金将在招募结束后划转"); }} />}
+      {joinPact && <JoinModal pact={joinPact} inviteCode={joinCode} account={wallet.account} provider={wallet.provider} onWallet={wallet.connect} onClose={() => { setJoinPact(null); const url = new URL(window.location.href); url.search = ""; window.history.replaceState({}, "", url); }} onJoined={async (joined, member) => {
+        const record = registry.find((item) => item.id === joined.id);
+        if (record) {
+          const members = record.members.filter((item) => item.address.toLowerCase() !== member.address.toLowerCase());
+          saveLocalPact({ ...record, memberCount: Math.max(record.memberCount ?? record.members.length, members.length + 1), members: [...members, member] });
+        }
+        await refreshRegistry();
+        setToast("已加入招募；保证金将在招募结束后划转");
+      }} />}
       {checkInPact && <CheckInModal pact={checkInPact} account={wallet.account} provider={wallet.provider} alreadyCompleted={checkedIds.has(checkInPact.id)} onWallet={wallet.connect} onClose={() => setCheckInPact(null)} onSuccess={(pact) => { setCheckedIds((current) => new Set(current).add(pact.id)); setToast("证明已接受 · 今日契约已完成"); }} />}
       {toast && <div className="toast" role="status"><Icon name="check" />{toast}</div>}
     </AppShell>

@@ -22,7 +22,7 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
   provider?: InjectedProvider;
   onWallet: () => Promise<Address | undefined>;
   onClose: () => void;
-  onJoined: (pact: PactSummary) => void | Promise<void>;
+  onJoined: (pact: PactSummary, member: { address: Address; username: string; joinedTx: Hex }) => void | Promise<void>;
 }) {
   const [handle, setHandle] = useState("");
   const [profileReady, setProfileReady] = useState(false);
@@ -98,11 +98,11 @@ export function JoinModal({ pact, inviteCode, account, provider, onWallet, onClo
       const registration = await fetch("/api/registry", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "member", transactionHash: hash, pactId: pact.id, address: participant, username: handle.trim() }),
-      });
-      if (!registration.ok) throw new Error("已加入链上招募，但自动验真登记失败，请保存交易哈希。");
+      }).catch(() => null);
       setTransactionHash(hash);
       setStage("joined");
-      await onJoined(pact);
+      await onJoined(pact, { address: participant, username: handle.trim(), joinedTx: hash });
+      if (!registration?.ok) setError("链上加入成功；验真资料已保存在当前设备。");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "加入失败，请检查钱包余额与授权。");
     } finally {

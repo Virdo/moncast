@@ -91,7 +91,8 @@ export function CheckInModal({ pact, account, provider, alreadyCompleted = false
         ALREADY_COMPLETED: "今日契约已经完成，无需重复提交。",
         CONTRACT_NOT_CONFIGURED: "Moncast 测试网协议尚未配置，证明没有广播。",
         ATTESTOR_NOT_CONFIGURED: "验真签名服务尚未配置，证明没有广播。",
-        AUTOMATION_MEMBER_NOT_REGISTERED: "当前钱包或平台账号未登记在这份真实契约中。",
+        NOT_ACTIVE_MEMBER: "当前钱包尚未进入这份契约的执行成员名单。",
+        RULE_MISMATCH: "所选平台与链上 ruleHash 不一致，证明没有广播。",
         COMPLETION_WINDOW_CLOSED: "该契约当前不在执行期，不能提交完成证明。",
         PROFILE_NOT_FOUND: "未找到已绑定的平台公开账号。",
       };

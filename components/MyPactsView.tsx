@@ -12,12 +12,13 @@ const lifecycleText: Record<PactLifecycle, string> = {
   unknown: "SYNCING",
 };
 
-export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn, onStartNow, onFormulate }: {
+export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn, onStartNow, onBindAccount, onFormulate }: {
   pacts?: PactSummary[];
   checkedIds: Set<string>;
   startingPactId?: string;
   onCheckIn: (pact: PactSummary) => void;
   onStartNow: (pact: PactSummary) => Promise<void>;
+  onBindAccount: (pact: PactSummary) => Promise<void>;
   onFormulate: () => void;
 }) {
   const activePacts = pacts.filter((pact) => pact.lifecycle === "active");
@@ -52,6 +53,7 @@ export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn,
               const checked = checkedIds.has(pact.id);
               const executable = pact.lifecycle === "active";
               const canStartNow = pact.lifecycle === "recruiting" && pact.isCreator;
+              const needsAccount = pact.goalType !== "custom" && !pact.username;
               const starting = startingPactId === pact.id;
               return (
                 <article className="commitment-row" key={pact.id}>
@@ -66,6 +68,7 @@ export function MyPactsView({ pacts = [], checkedIds, startingPactId, onCheckIn,
                   <div className="commitment-action">
                     <span><Icon name="shield" /> {lifecycleText[pact.lifecycle]}</span>
                     {canStartNow && <button className="button primary" title={pact.members < 2 ? "至少需要 2 名成员" : undefined} disabled={Boolean(startingPactId) || pact.members < 2} onClick={() => void onStartNow(pact)}>{starting ? "开始中" : "立即开始"}</button>}
+                    {needsAccount && <button className="button outline" onClick={() => void onBindAccount(pact)}>恢复验真账号</button>}
                     {executable && <button className={checked ? "button ghost" : "button primary"} onClick={() => onCheckIn(pact)}>{checked ? "查看证明" : "完成契约"}</button>}
                   </div>
                 </article>

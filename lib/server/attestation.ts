@@ -1,8 +1,12 @@
 import { encodeAbiParameters, keccak256, parseAbiParameters, stringToHex, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { moncastAddress, protocolAbi, publicClient } from "../moncast-chain";
+import { commitmentHash, moncastAddress, protocolAbi, publicClient } from "../moncast-chain";
 import { verifyPlatformToday, type Platform } from "../platform-verification";
-import { findPact } from "./registry";
+
+const platformRules: Record<Platform, string> = {
+  leetcode: "每日 AC ≥ 1",
+  duolingo: "每日完成 ≥ 1 次学习并延续连胜",
+};
 
 export async function createCompletionAttestation(input: {
   pactId: string;
@@ -13,15 +17,14 @@ export async function createCompletionAttestation(input: {
   if (!moncastAddress) throw new Error("CONTRACT_NOT_CONFIGURED");
   const privateKey = process.env.ATTESTOR_PRIVATE_KEY as Hex | undefined;
   if (!privateKey) throw new Error("ATTESTOR_NOT_CONFIGURED");
-  const pact = await findPact(moncastAddress, input.pactId);
-  const member = pact?.members.find((item) => item.address.toLowerCase() === input.participant.toLowerCase());
-  if (!pact || !member || member.username !== input.username || pact.platform !== input.platform) {
-    throw new Error("AUTOMATION_MEMBER_NOT_REGISTERED");
-  }
-  const [[epoch, completionOpen], pactState] = await Promise.all([
+  const [[epoch, completionOpen], pactState, memberState] = await Promise.all([
     publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "currentEpoch", args: [BigInt(input.pactId)], blockTag: "safe" }),
     publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "pacts", args: [BigInt(input.pactId)], blockTag: "safe" }),
+    publicClient.readContract({ address: moncastAddress, abi: protocolAbi, functionName: "members", args: [BigInt(input.pactId), input.participant], blockTag: "safe" }),
   ]);
+  if (Number(memberState[3]) !== 2) throw new Error("NOT_ACTIVE_MEMBER");
+  const expectedRuleHash = commitmentHash({ rule: platformRules[input.platform], apiOrigin: input.platform });
+  if (pactState[3].toLowerCase() !== expectedRuleHash.toLowerCase()) throw new Error("RULE_MISMATCH");
   if (!completionOpen) throw new Error("COMPLETION_WINDOW_CLOSED");
   const alreadyCompleted = await publicClient.readContract({
     address: moncastAddress, abi: protocolAbi, functionName: "completedEpoch",
@@ -29,7 +32,7 @@ export async function createCompletionAttestation(input: {
   });
   if (alreadyCompleted) throw new Error("ALREADY_COMPLETED");
 
-  const { profile, passed } = await verifyPlatformToday(input.platform, input.username, pact.utcOffsetMinutes);
+  const { profile, passed } = await verifyPlatformToday(input.platform, input.username, pactState[19]);
   if (!profile) throw new Error("PROFILE_NOT_FOUND");
   if (!passed) throw new Error("TARGET_NOT_COMPLETED");
 

@@ -31,7 +31,12 @@ export type RegisteredPact = {
 type StoredPact = Omit<RegisteredPact, "protocolAddress"> & { protocolAddress?: Address };
 type Registry = { version: 1; pacts: StoredPact[] };
 
-const registryPath = resolve(process.cwd(), "data", "automation-registry.json");
+const bundledRegistryPath = resolve(process.cwd(), "data", "automation-registry.json");
+// Vercel's deployed bundle is read-only. /tmp keeps best-effort warm-instance
+// registration while the browser-held registry remains the durable demo store.
+const registryPath = process.env.VERCEL
+  ? resolve("/tmp", "moncast-automation-registry.json")
+  : bundledRegistryPath;
 const emptyRegistry: Registry = { version: 1, pacts: [] };
 
 export async function readRegistry(): Promise<Registry> {
@@ -39,6 +44,14 @@ export async function readRegistry(): Promise<Registry> {
     const value = JSON.parse(await readFile(registryPath, "utf8")) as Registry;
     return value.version === 1 && Array.isArray(value.pacts) ? value : emptyRegistry;
   } catch {
+    if (registryPath !== bundledRegistryPath) {
+      try {
+        const bundled = JSON.parse(await readFile(bundledRegistryPath, "utf8")) as Registry;
+        if (bundled.version === 1 && Array.isArray(bundled.pacts)) return bundled;
+      } catch {
+        // Continue with an empty registry; callers can still reconstruct chain state.
+      }
+    }
     return { ...emptyRegistry, pacts: [] };
   }
 }
