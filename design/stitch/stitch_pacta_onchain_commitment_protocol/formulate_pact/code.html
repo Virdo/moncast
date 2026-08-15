@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PACTA - Formulate New Pact</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "on-secondary-container": "#c6ceff",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#001356",
+                        "surface-tint": "#b8d300",
+                        "primary-fixed-dim": "#b8d300",
+                        "primary-fixed": "#d2f000",
+                        "on-surface": "#e2e2e3",
+                        "background": "#121415",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-container": "#656465",
+                        "primary": "#ffffff",
+                        "surface-container-lowest": "#0c0e0f",
+                        "inverse-surface": "#e2e2e3",
+                        "tertiary": "#ffffff",
+                        "surface-container": "#1e2021",
+                        "surface-variant": "#333536",
+                        "on-surface-variant": "#c6c9ab",
+                        "on-tertiary": "#313031",
+                        "primary-container": "#d2f000",
+                        "inverse-primary": "#576500",
+                        "surface-container-low": "#1a1c1d",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-fixed-variant": "#474647",
+                        "surface": "#121415",
+                        "on-secondary": "#002388",
+                        "secondary": "#b8c3ff",
+                        "on-tertiary-fixed": "#1c1b1c",
+                        "tertiary-fixed": "#e5e2e3",
+                        "secondary-container": "#0043eb",
+                        "on-primary-container": "#5d6b00",
+                        "surface-dim": "#121415",
+                        "inverse-on-surface": "#2f3132",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#191e00",
+                        "tertiary-container": "#e5e2e3",
+                        "secondary-fixed-dim": "#b8c3ff",
+                        "outline": "#909378",
+                        "on-primary-fixed-variant": "#414c00",
+                        "on-primary": "#2c3400",
+                        "secondary-fixed": "#dde1ff",
+                        "tertiary-fixed-dim": "#c8c6c7",
+                        "surface-container-highest": "#333536",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#0035be",
+                        "on-background": "#e2e2e3",
+                        "outline-variant": "#454932"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "base": "4px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #0A0A0B; color: #e2e2e3; }
+        .glass-panel {
+            background: rgba(10, 10, 11, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(210, 240, 0, 0.1);
+        }
+        .glowing-border {
+            position: relative;
+        }
+        .glowing-border::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px; right: -1px; bottom: -1px;
+            border: 1px solid rgba(210, 240, 0, 0.5);
+            filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .glowing-border:hover::before, .glowing-border:focus-within::before {
+            opacity: 1;
+        }
+        
+        /* Custom scrollbar for ZK logs if needed */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(210, 240, 0, 0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(210, 240, 0, 0.4); }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+<!-- Mobile Top Navigation (Hidden on md+) -->
+<nav class="md:hidden flex justify-between items-center px-margin-mobile mx-auto h-20 w-full fixed top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-primary/15">
+<div class="flex items-center gap-3">
+<img alt="Pacta Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIqjxStmlGmMfT5ZbB6SV-MsometdiQzon1UpH1cWnIFAxDiWyOLnzY--ojGZbXmSgPCXG8FjLVkyEnx4XzZDyrllfGhyCM-kP7NKQi1U1IkQWGQu5kbdfTX3N9B4S7HO8_BH0o3gGgZfh7ueuTi45dUExY37XLfr2xZIadwhuQsi8Tzg3XgoQBSHDNdzxszFVvFYnKPjVR5_iLfrImBIFr9fBwTiIFy6TnnZlEcBXeJ7cbooTbXbw6w"/>
+<span class="font-label-caps text-label-caps tracking-widest text-primary-fixed">PACTA</span>
+</div>
+<button class="font-label-caps text-primary-fixed bg-surface-container py-2 px-4 border border-primary-fixed/20 active:scale-95 transition-transform">CONNECT</button>
+</nav>
+<!-- Side Navigation (Visible on lg+) -->
+<nav class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col bg-surface-container-lowest/90 backdrop-blur-2xl border-r border-primary/10 py-8 z-40">
+<div class="px-6 mb-12 flex items-center gap-4">
+<img alt="Pacta Logo" class="w-10 h-10 object-contain rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIqjxStmlGmMfT5ZbB6SV-MsometdiQzon1UpH1cWnIFAxDiWyOLnzY--ojGZbXmSgPCXG8FjLVkyEnx4XzZDyrllfGhyCM-kP7NKQi1U1IkQWGQu5kbdfTX3N9B4S7HO8_BH0o3gGgZfh7ueuTi45dUExY37XLfr2xZIadwhuQsi8Tzg3XgoQBSHDNdzxszFVvFYnKPjVR5_iLfrImBIFr9fBwTiIFy6TnnZlEcBXeJ7cbooTbXbw6w"/>
+<div>
+<h1 class="font-label-caps text-primary-fixed-dim text-lg">PACTA</h1>
+<p class="font-data-mono text-data-mono text-on-surface-variant/70 text-[10px]">ZK-Commitment Protocol</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 font-label-caps text-label-caps transition-all duration-200 ease-in-out hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+                Pact Plaza
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 font-label-caps text-label-caps transition-all duration-200 ease-in-out hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+                My Pacts
+            </a>
+<a class="bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed px-6 py-4 flex items-center gap-3 font-label-caps text-label-caps transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="add_box" style="font-variation-settings: 'FILL' 1;">add_box</span>
+                Formulate
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 font-label-caps text-label-caps transition-all duration-200 ease-in-out hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+                Manifesto
+            </a>
+</div>
+<div class="px-6 mt-auto">
+<button class="w-full bg-primary-fixed text-on-primary font-body-lg text-body-lg py-3 font-bold hover:bg-primary-fixed-dim transition-colors">
+                New Pact
+            </button>
+</div>
+<div class="mt-8 border-t border-primary/10 pt-4 flex flex-col gap-2">
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-3 flex items-center gap-3 font-label-caps text-[10px] transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="menu_book">menu_book</span>
+                Docs
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-3 flex items-center gap-3 font-label-caps text-[10px] transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="contact_support">contact_support</span>
+                Support
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 pt-24 md:pt-12 px-margin-mobile md:px-margin-desktop pb-24 max-w-container-max mx-auto w-full">
+<!-- Header -->
+<header class="mb-12">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container border border-primary/10 mb-4">
+<span class="w-2 h-2 bg-primary-fixed rounded-full animate-pulse"></span>
+<span class="font-data-mono text-data-mono text-primary-fixed text-[10px] uppercase tracking-wider">Protocol Active // ZK-Ready</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary mb-2">Formulate Commitment</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Define cryptographic constraints and stake capital against verifiable real-world actions.</p>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Form Section -->
+<div class="xl:col-span-8 flex flex-col gap-8">
+<!-- Step 1: Mode -->
+<section class="glass-panel p-6 md:p-8">
+<div class="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-3">
+<span class="font-data-mono text-primary-fixed-dim text-sm opacity-50">01</span>
+                            Visibility Mode
+                        </h3>
+<span class="material-symbols-outlined text-outline" data-icon="visibility">visibility</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<label class="cursor-pointer relative glowing-border">
+<input checked="" class="peer sr-only" name="mode" type="radio" value="public"/>
+<div class="h-full p-6 border border-primary/20 bg-surface-container-low peer-checked:border-primary-fixed peer-checked:bg-primary-fixed/5 transition-all">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-primary">Public Protocol</span>
+<span class="material-symbols-outlined text-primary-fixed text-[20px]" data-icon="public">public</span>
+</div>
+<p class="font-data-mono text-[12px] text-on-surface-variant/70 leading-relaxed">Commitment details, progress, and proof validations are visible on the public ledger.</p>
+</div>
+</label>
+<label class="cursor-pointer relative glowing-border">
+<input class="peer sr-only" name="mode" type="radio" value="private"/>
+<div class="h-full p-6 border border-primary/20 bg-surface-container-low peer-checked:border-primary-fixed peer-checked:bg-primary-fixed/5 transition-all">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-primary">Private (ZK)</span>
+<span class="material-symbols-outlined text-outline text-[20px]" data-icon="lock">lock</span>
+</div>
+<p class="font-data-mono text-[12px] text-on-surface-variant/70 leading-relaxed">Only cryptographic proofs are published. Details remain encrypted off-chain.</p>
+</div>
+</label>
+</div>
+</section>
+<!-- Step 2: Target -->
+<section class="glass-panel p-6 md:p-8">
+<div class="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-3">
+<span class="font-data-mono text-primary-fixed-dim text-sm opacity-50">02</span>
+                            Verification Target
+                        </h3>
+<span class="material-symbols-outlined text-outline" data-icon="api">api</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+<!-- Target Options -->
+<div class="border border-primary-fixed/50 bg-primary-fixed/5 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-primary-fixed text-3xl" data-icon="code">code</span>
+<span class="font-label-caps text-label-caps text-primary text-[10px]">LeetCode</span>
+</div>
+<div class="border border-primary/20 bg-surface-container-low hover:border-primary/40 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-outline text-3xl" data-icon="translate">translate</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">Duolingo</span>
+</div>
+<div class="border border-primary/20 bg-surface-container-low hover:border-primary/40 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-outline text-3xl" data-icon="webhook">webhook</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-[10px]">Custom API</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-data-mono text-[12px] text-on-surface-variant">LeetCode Username</label>
+<div class="relative glowing-border">
+<input class="w-full bg-surface-container-lowest border border-primary/20 p-4 font-data-mono text-data-mono text-primary focus:outline-none focus:border-primary-fixed transition-colors" type="text" value="zk_developer_01"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[10px] font-data-mono text-primary-fixed">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span> Verified
+                            </div>
+</div>
+</div>
+</section>
+<!-- Step 3: Parameters -->
+<section class="glass-panel p-6 md:p-8">
+<div class="flex items-center justify-between mb-6 border-b border-primary/10 pb-4">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-3">
+<span class="font-data-mono text-primary-fixed-dim text-sm opacity-50">03</span>
+                            Staking Parameters
+                        </h3>
+<span class="material-symbols-outlined text-outline" data-icon="tune">tune</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Cycle -->
+<div>
+<label class="font-data-mono text-[12px] text-on-surface-variant block mb-3">Commitment Cycle (Days)</label>
+<div class="flex gap-2">
+<button class="flex-1 border border-primary/20 bg-surface-container-low py-3 font-data-mono text-data-mono text-on-surface-variant hover:border-primary/40 transition-colors">7D</button>
+<button class="flex-1 border border-primary-fixed/50 bg-primary-fixed/10 py-3 font-data-mono text-data-mono text-primary-fixed transition-colors">14D</button>
+<button class="flex-1 border border-primary/20 bg-surface-container-low py-3 font-data-mono text-data-mono text-on-surface-variant hover:border-primary/40 transition-colors">30D</button>
+</div>
+</div>
+<!-- Bond -->
+<div>
+<label class="font-data-mono text-[12px] text-on-surface-variant block mb-3">Capital Bond (USDC)</label>
+<div class="grid grid-cols-4 gap-2">
+<button class="border border-primary/20 bg-surface-container-low py-3 font-data-mono text-data-mono text-on-surface-variant hover:border-primary/40 transition-colors">30</button>
+<button class="border border-primary/20 bg-surface-container-low py-3 font-data-mono text-data-mono text-on-surface-variant hover:border-primary/40 transition-colors">50</button>
+<button class="border border-primary-fixed/50 bg-primary-fixed/10 py-3 font-data-mono text-data-mono text-primary-fixed transition-colors">100</button>
+<button class="border border-primary/20 bg-surface-container-low py-3 font-data-mono text-data-mono text-on-surface-variant hover:border-primary/40 transition-colors">200</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Summary / Execution Sidebar -->
+<div class="xl:col-span-4">
+<div class="glass-panel p-6 sticky top-8 flex flex-col h-[calc(100vh-120px)] max-h-[800px]">
+<h3 class="font-label-caps text-label-caps text-primary border-b border-primary/10 pb-4 mb-4 flex items-center justify-between">
+                        Manifesto of Intent
+                        <span class="material-symbols-outlined text-[16px]" data-icon="receipt_long">receipt_long</span>
+</h3>
+<div class="flex-1 overflow-y-auto mb-6 pr-2">
+<div class="bg-surface-container-lowest border border-primary/10 p-4 font-data-mono text-[12px] leading-relaxed text-on-surface-variant/80 mb-6">
+<p class="mb-4">I hereby commit to executing the specified programmatic actions under the following cryptographic constraints.</p>
+<div class="flex justify-between border-b border-primary/5 py-2">
+<span>PROTOCOL:</span>
+<span class="text-secondary">Public.V1</span>
+</div>
+<div class="flex justify-between border-b border-primary/5 py-2">
+<span>TARGET:</span>
+<span class="text-secondary">LeetCode API</span>
+</div>
+<div class="flex justify-between border-b border-primary/5 py-2">
+<span>CONDITION:</span>
+<span class="text-secondary">1 Problem / Day</span>
+</div>
+<div class="flex justify-between border-b border-primary/5 py-2">
+<span>DURATION:</span>
+<span class="text-secondary">14 Days</span>
+</div>
+<div class="flex justify-between pt-2">
+<span>STAKE:</span>
+<span class="text-primary-fixed font-bold">100 USDC</span>
+</div>
+</div>
+<!-- Simulated ZK Log -->
+<div class="text-[10px] font-data-mono text-on-surface-variant/50 space-y-1">
+<p>&gt; Initializing commitment circuit...</p>
+<p>&gt; Compiling verification keys...</p>
+<p class="text-primary-fixed/70">&gt; Awaiting user signature.</p>
+</div>
+</div>
+<div class="mt-auto pt-6 border-t border-primary/10">
+<div class="flex justify-between items-end mb-4">
+<span class="font-label-caps text-[10px] text-on-surface-variant">TOTAL VALUE LOCKED</span>
+<span class="font-headline-md text-headline-md text-primary">100.00 <span class="text-sm text-outline">USDC</span></span>
+</div>
+<button class="w-full bg-primary-fixed text-on-primary font-body-lg text-body-lg py-4 font-bold hover:bg-primary-fixed-dim transition-colors flex items-center justify-center gap-2 glowing-border">
+                            Formulate New Pact (制定新契约)
+                            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (Hidden on md+) -->
+<nav class="md:hidden fixed bottom-0 w-full h-16 bg-surface-container-lowest/90 backdrop-blur-2xl border-t border-primary/10 z-50 flex justify-around items-center px-4">
+<a class="flex flex-col items-center gap-1 text-on-tertiary-container hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="hub">hub</span>
+<span class="font-label-caps text-[8px]">Plaza</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-tertiary-container hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-caps text-[8px]">Pacts</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary-fixed" href="#">
+<span class="material-symbols-outlined text-[24px]" data-icon="add_box" style="font-variation-settings: 'FILL' 1;">add_box</span>
+<span class="font-label-caps text-[8px] font-bold">Formulate</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-tertiary-container hover:text-primary-fixed transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="terminal">terminal</span>
+<span class="font-label-caps text-[8px]">Manifesto</span>
+</a>
+</nav>
+</body></html>

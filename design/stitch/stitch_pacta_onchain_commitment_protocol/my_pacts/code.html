@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PACTA - My Pacts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "on-secondary-container": "#c6ceff",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#001356",
+                        "surface-tint": "#b8d300",
+                        "primary-fixed-dim": "#b8d300",
+                        "primary-fixed": "#d2f000",
+                        "on-surface": "#e2e2e3",
+                        "background": "#121415",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-container": "#656465",
+                        "primary": "#ffffff",
+                        "surface-container-lowest": "#0c0e0f",
+                        "inverse-surface": "#e2e2e3",
+                        "tertiary": "#ffffff",
+                        "surface-container": "#1e2021",
+                        "surface-variant": "#333536",
+                        "on-surface-variant": "#c6c9ab",
+                        "on-tertiary": "#313031",
+                        "primary-container": "#d2f000",
+                        "inverse-primary": "#576500",
+                        "surface-container-low": "#1a1c1d",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-fixed-variant": "#474647",
+                        "surface": "#121415",
+                        "on-secondary": "#002388",
+                        "secondary": "#b8c3ff",
+                        "on-tertiary-fixed": "#1c1b1c",
+                        "tertiary-fixed": "#e5e2e3",
+                        "secondary-container": "#0043eb",
+                        "on-primary-container": "#5d6b00",
+                        "surface-dim": "#121415",
+                        "inverse-on-surface": "#2f3132",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#191e00",
+                        "tertiary-container": "#e5e2e3",
+                        "secondary-fixed-dim": "#b8c3ff",
+                        "outline": "#909378",
+                        "on-primary-fixed-variant": "#414c00",
+                        "on-primary": "#2c3400",
+                        "secondary-fixed": "#dde1ff",
+                        "tertiary-fixed-dim": "#c8c6c7",
+                        "surface-container-highest": "#333536",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#0035be",
+                        "on-background": "#e2e2e3",
+                        "outline-variant": "#454932"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "base": "4px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #121415;
+            color: #e2e2e3;
+        }
+        
+        .glass-panel {
+            background: rgba(10, 10, 11, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(210, 240, 0, 0.15); /* Primary-fixed 15% */
+        }
+        
+        .btn-primary {
+            background-color: #d2f000;
+            color: #191e00;
+            border-radius: 0;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 15px rgba(210, 240, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: #b8c3ff;
+            border: 1px solid #0043eb; /* Secondary-container (Electric Cobalt proxy) */
+            border-radius: 0;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            box-shadow: 0 0 10px rgba(0, 67, 235, 0.4);
+        }
+        
+        .heatmap-cell {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            background-color: #1a1c1d; /* surface-container-low */
+            transition: background-color 0.3s ease;
+        }
+        .heatmap-cell.level-1 { background-color: rgba(210, 240, 0, 0.2); }
+        .heatmap-cell.level-2 { background-color: rgba(210, 240, 0, 0.5); }
+        .heatmap-cell.level-3 { background-color: rgba(210, 240, 0, 0.8); }
+        .heatmap-cell.level-4 { background-color: rgba(210, 240, 0, 1); box-shadow: 0 0 5px rgba(210, 240, 0, 0.5); }
+        
+        .progress-track {
+            height: 2px;
+            background-color: rgba(0, 67, 235, 0.3); /* Dim Cobalt */
+            width: 100%;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #d2f000; /* Acid Lime */
+            box-shadow: 0 0 5px rgba(210, 240, 0, 0.6);
+        }
+        
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        /* Modal Animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .pulse-effect::before {
+            content: '';
+            position: absolute;
+            left: -10px; top: -10px; right: -10px; bottom: -10px;
+            border: 1px solid #d2f000;
+            border-radius: 4px;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        /* ZK Log Area */
+        .zk-log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 1px solid rgba(210, 240, 0, 0.1);
+        }
+        .zk-key { color: #e2e2e3; } /* Neutral */
+        .zk-val { color: #b8c3ff; } /* Electric Cobalt (Secondary) */
+    </style>
+</head>
+<body class="flex bg-background text-on-surface font-body-md h-screen overflow-hidden">
+<!-- Top Navigation (Mobile Only) -->
+<nav class="md:hidden glass-panel fixed top-0 w-full z-50 flex justify-between items-center px-gutter mx-auto h-20 border-b border-primary/15">
+<div class="flex items-center gap-3">
+<img alt="Pacta Logo" class="w-8 h-8 rounded object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIqjxStmlGmMfT5ZbB6SV-MsometdiQzon1UpH1cWnIFAxDiWyOLnzY--ojGZbXmSgPCXG8FjLVkyEnx4XzZDyrllfGhyCM-kP7NKQi1U1IkQWGQu5kbdfTX3N9B4S7HO8_BH0o3gGgZfh7ueuTi45dUExY37XLfr2xZIadwhuQsi8Tzg3XgoQBSHDNdzxszFVvFYnKPjVR5_iLfrImBIFr9fBwTiIFy6TnnZlEcBXeJ7cbooTbXbw6w"/>
+<span class="font-label-caps text-label-caps tracking-widest text-primary-fixed">PACTA</span>
+</div>
+<button class="icon-box text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</button>
+</nav>
+<!-- Sidebar Navigation (Desktop) -->
+<aside class="bg-surface-container-lowest/90 backdrop-blur-2xl border-r border-primary/10 h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col py-8 z-40">
+<!-- Header -->
+<div class="px-6 mb-10 flex items-center gap-4">
+<img alt="Pacta Logo" class="w-10 h-10 object-cover border border-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIqjxStmlGmMfT5ZbB6SV-MsometdiQzon1UpH1cWnIFAxDiWyOLnzY--ojGZbXmSgPCXG8FjLVkyEnx4XzZDyrllfGhyCM-kP7NKQi1U1IkQWGQu5kbdfTX3N9B4S7HO8_BH0o3gGgZfh7ueuTi45dUExY37XLfr2xZIadwhuQsi8Tzg3XgoQBSHDNdzxszFVvFYnKPjVR5_iLfrImBIFr9fBwTiIFy6TnnZlEcBXeJ7cbooTbXbw6w"/>
+<div>
+<h1 class="font-label-caps text-primary-fixed-dim text-lg">PACTA</h1>
+<p class="font-data-mono text-data-mono text-on-surface-variant/70 text-xs">ZK-Commitment Protocol</p>
+</div>
+</div>
+<!-- CTA -->
+<div class="px-6 mb-8">
+<button class="btn-primary w-full py-3 font-body-md text-body-md font-bold flex justify-center items-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                New Pact
+            </button>
+</div>
+<!-- Main Nav Tabs -->
+<nav class="flex-1 flex flex-col gap-1">
+<a class="text-on-tertiary-container hover:bg-surface-variant/30 px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">hub</span>
+                Pact Plaza
+            </a>
+<a class="bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+                My Pacts
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/30 px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">add_box</span>
+                Formulate
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/30 px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">terminal</span>
+                Manifesto
+            </a>
+</nav>
+<!-- Footer Nav -->
+<div class="mt-auto flex flex-col gap-1">
+<a class="text-on-tertiary-container hover:bg-surface-variant/30 px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+                Docs
+            </a>
+<a class="text-on-tertiary-container hover:bg-surface-variant/30 px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out font-label-caps text-label-caps md:font-body-md md:text-body-md" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+                Support
+            </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 h-full overflow-y-auto pt-20 lg:pt-0">
+<div class="max-w-container-max mx-auto p-margin-mobile md:p-gutter lg:p-margin-desktop space-y-8">
+<!-- Dashboard Header -->
+<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-surface-variant pb-6">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight">System Status</h2>
+<p class="font-data-mono text-data-mono text-on-surface-variant mt-2 flex items-center gap-2">
+<span class="w-2 h-2 bg-primary-fixed rounded-full animate-pulse"></span>
+                        PROTOCOL LIVE / ETH MAINNET
+                    </p>
+</div>
+<div class="flex items-center gap-4">
+<button class="btn-primary px-8 py-4 font-body-md font-bold text-body-md uppercase tracking-wider flex items-center gap-2" onclick="document.getElementById('zk-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined">fingerprint</span>
+                        Today's Check-In
+                    </button>
+</div>
+</header>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Active Pacts Column -->
+<div class="xl:col-span-8 space-y-gutter">
+<h3 class="font-headline-md text-headline-md text-primary">Active Commitments</h3>
+<!-- Commitment Card 1 -->
+<div class="glass-panel p-6 relative group hover:border-primary-fixed/50 transition-colors">
+<div class="absolute top-6 right-6 font-data-mono text-data-mono bg-surface-container-high px-2 py-1 text-primary-fixed border border-primary-fixed/30">
+                            PROVING
+                        </div>
+<div class="flex items-start gap-4 mb-6">
+<div class="icon-box text-secondary border-secondary/30 mt-1">
+<span class="material-symbols-outlined">directions_run</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg font-bold text-primary">Daily 5km Run</h4>
+<p class="font-data-mono text-data-mono text-on-surface-variant/70 mt-1">Pact ID: 0x8a9F...3b21</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Stake</p>
+<p class="font-data-mono text-data-mono text-primary">0.5 ETH</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Streak</p>
+<p class="font-data-mono text-data-mono text-primary">14 Days</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Status</p>
+<p class="font-data-mono text-data-mono text-error">Pending Check-in</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Deadline</p>
+<p class="font-data-mono text-data-mono text-primary">23:59 UTC</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant mb-2">
+<span>Completion</span>
+<span class="text-primary-fixed">45%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 45%;"></div>
+</div>
+</div>
+</div>
+<!-- Commitment Card 2 -->
+<div class="glass-panel p-6 relative group hover:border-primary-fixed/50 transition-colors opacity-75">
+<div class="absolute top-6 right-6 font-data-mono text-data-mono bg-surface-container-high px-2 py-1 text-on-surface-variant border border-on-surface-variant/30">
+                            VERIFIED
+                        </div>
+<div class="flex items-start gap-4 mb-6">
+<div class="icon-box text-on-surface-variant border-on-surface-variant/30 mt-1">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg font-bold text-primary">Read 1 Chapter</h4>
+<p class="font-data-mono text-data-mono text-on-surface-variant/70 mt-1">Pact ID: 0x2b4C...9f0E</p>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Stake</p>
+<p class="font-data-mono text-data-mono text-primary">100 USDC</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Streak</p>
+<p class="font-data-mono text-data-mono text-primary">3 Days</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Status</p>
+<p class="font-data-mono text-data-mono text-primary-fixed">Verified</p>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1">Deadline</p>
+<p class="font-data-mono text-data-mono text-primary">Complete</p>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-caps text-label-caps text-on-surface-variant mb-2">
+<span>Completion</span>
+<span class="text-primary-fixed">10%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: 10%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats & Heatmap Column -->
+<div class="xl:col-span-4 space-y-gutter">
+<!-- Stats Block -->
+<div class="glass-panel p-6 flex flex-col gap-6">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase border-b border-surface-variant pb-2">Global State</h3>
+<div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-1">Total Bond at Risk</p>
+<p class="font-headline-lg text-headline-lg text-primary font-bold">
+                                $2,450<span class="text-headline-md text-on-surface-variant/50">.00</span>
+</p>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-1">Accumulated Slashing Rewards</p>
+<p class="font-headline-md text-headline-md text-primary-fixed font-bold">
+                                +45.20 USDC
+                            </p>
+</div>
+</div>
+<!-- Heatmap Block -->
+<div class="glass-panel p-6">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase border-b border-surface-variant pb-2 mb-6">Consistency Matrix</h3>
+<div class="flex flex-col gap-2">
+<!-- Weeks (Rows) -->
+<!-- Javascript will populate this in a real app, hardcoded for visual -->
+<div class="flex gap-1 justify-end">
+<div class="heatmap-cell level-1"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-3"></div>
+</div>
+<div class="flex gap-1 justify-end">
+<div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div>
+</div>
+<div class="flex gap-1 justify-end">
+<div class="heatmap-cell level-4"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div>
+</div>
+<div class="flex gap-1 justify-end">
+<div class="heatmap-cell level-1"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-2"></div><div class="heatmap-cell level-1"></div>
+</div>
+<div class="flex gap-1 justify-end">
+<div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div><div class="heatmap-cell level-3"></div><div class="heatmap-cell level-4"></div><div class="heatmap-cell level-0"></div><div class="heatmap-cell level-1"></div>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-end gap-2 font-data-mono text-[10px] text-on-surface-variant uppercase">
+<span>Less</span>
+<div class="flex gap-1">
+<div class="heatmap-cell bg-surface-container-low"></div>
+<div class="heatmap-cell level-1"></div>
+<div class="heatmap-cell level-2"></div>
+<div class="heatmap-cell level-3"></div>
+<div class="heatmap-cell level-4"></div>
+</div>
+<span>More</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden glass-panel fixed bottom-0 w-full z-50 border-t border-primary/10">
+<ul class="flex justify-around items-center h-16">
+<li class="flex-1 flex justify-center">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant/70" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-label-caps text-[10px]">Plaza</span>
+</a>
+</li>
+<li class="flex-1 flex justify-center">
+<a class="flex flex-col items-center gap-1 text-primary-fixed border-t-2 border-primary-fixed pt-1 -mt-[2px]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_turned_in</span>
+<span class="font-label-caps text-[10px] font-bold">My Pacts</span>
+</a>
+</li>
+<li class="flex-1 flex justify-center">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant/70" href="#">
+<span class="material-symbols-outlined">add_box</span>
+<span class="font-label-caps text-[10px]">Formulate</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- ZK-TLS Verification Modal Simulation -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4" id="zk-modal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-background/90 backdrop-blur-3xl" onclick="document.getElementById('zk-modal').classList.add('hidden')"></div>
+<!-- Modal Content -->
+<div class="glass-panel relative w-full max-w-2xl bg-surface-container-lowest/80 border-primary-fixed/30 shadow-[0_0_40px_rgba(210,240,0,0.1)] flex flex-col shadow-2xl">
+<!-- Header glow -->
+<div class="absolute top-0 left-0 w-32 h-32 bg-primary-fixed/20 blur-3xl rounded-full"></div>
+<div class="p-6 border-b border-surface-variant flex justify-between items-center relative z-10">
+<h2 class="font-label-caps text-label-caps text-primary tracking-widest flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed">security</span>
+                    ZK-TLS Proof Generation
+                </h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors" onclick="document.getElementById('zk-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-8 relative z-10 space-y-8">
+<!-- Status Visualizer -->
+<div class="flex justify-between items-center relative">
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-surface-variant -z-10"></div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold font-data-mono z-10 shadow-[0_0_15px_rgba(210,240,0,0.5)] pulse-effect relative">1</div>
+<span class="font-label-caps text-[10px] text-primary-fixed">Handshake</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-primary-fixed/50 text-primary-fixed flex items-center justify-center font-bold font-data-mono z-10">2</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Intercept</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-surface-variant text-on-surface-variant flex items-center justify-center font-bold font-data-mono z-10">3</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant/50">Verify</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-surface-variant text-on-surface-variant flex items-center justify-center font-bold font-data-mono z-10">4</div>
+<span class="font-label-caps text-[10px] text-on-surface-variant/50">Broadcast</span>
+</div>
+</div>
+<!-- Log Window -->
+<div class="bg-[#050505] border border-surface-variant p-4 font-data-mono text-data-mono zk-log-container relative overflow-hidden">
+<!-- Scanline effect -->
+<div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[length:100%_4px] pointer-events-none"></div>
+<div class="space-y-1 relative z-10 text-xs">
+<div class="flex"><span class="w-24 text-on-surface-variant">[SYS]</span> <span class="zk-key">INITIATING ZK-TLS CONNECTION...</span></div>
+<div class="flex"><span class="w-24 text-on-surface-variant">[SYS]</span> <span class="zk-key">TARGET URL:</span> <span class="zk-val ml-2">https://api.fitness-tracker.com/v1/activity</span></div>
+<div class="flex"><span class="w-24 text-on-surface-variant">[TLS]</span> <span class="zk-key">CLIENT HELLO SENT</span></div>
+<div class="flex"><span class="w-24 text-on-surface-variant">[TLS]</span> <span class="zk-key">SERVER HELLO RECEIVED</span></div>
+<div class="flex"><span class="w-24 text-on-surface-variant">[TLS]</span> <span class="zk-key">CIPHER SUITE:</span> <span class="zk-val ml-2">TLS_AES_256_GCM_SHA384</span></div>
+<div class="flex opacity-50 animate-pulse"><span class="w-24 text-on-surface-variant">[MPC]</span> <span class="zk-key">GENERATING SHARED SECRET KEY...</span></div>
+</div>
+</div>
+<div class="flex justify-end pt-4">
+<button class="btn-secondary px-6 py-2 font-body-md text-sm mr-4" onclick="document.getElementById('zk-modal').classList.add('hidden')">Abort</button>
+<button class="btn-primary px-8 py-2 font-body-md font-bold text-sm opacity-50 cursor-not-allowed">Proving...</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

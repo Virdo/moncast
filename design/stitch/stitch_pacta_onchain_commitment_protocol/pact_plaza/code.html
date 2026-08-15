@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pacta - Pact Plaza</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#690005",
+                        "on-secondary-container": "#c6ceff",
+                        "error": "#ffb4ab",
+                        "on-secondary-fixed": "#001356",
+                        "surface-tint": "#b8d300",
+                        "primary-fixed-dim": "#b8d300",
+                        "primary-fixed": "#d2f000",
+                        "on-surface": "#e2e2e3",
+                        "background": "#121415",
+                        "surface-bright": "#38393a",
+                        "on-tertiary-container": "#656465",
+                        "primary": "#ffffff",
+                        "surface-container-lowest": "#0c0e0f",
+                        "inverse-surface": "#e2e2e3",
+                        "tertiary": "#ffffff",
+                        "surface-container": "#1e2021",
+                        "surface-variant": "#333536",
+                        "on-surface-variant": "#c6c9ab",
+                        "on-tertiary": "#313031",
+                        "primary-container": "#d2f000",
+                        "inverse-primary": "#576500",
+                        "surface-container-low": "#1a1c1d",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-fixed-variant": "#474647",
+                        "surface": "#121415",
+                        "on-secondary": "#002388",
+                        "secondary": "#b8c3ff",
+                        "on-tertiary-fixed": "#1c1b1c",
+                        "tertiary-fixed": "#e5e2e3",
+                        "secondary-container": "#0043eb",
+                        "on-primary-container": "#5d6b00",
+                        "surface-dim": "#121415",
+                        "inverse-on-surface": "#2f3132",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#191e00",
+                        "tertiary-container": "#e5e2e3",
+                        "secondary-fixed-dim": "#b8c3ff",
+                        "outline": "#909378",
+                        "on-primary-fixed-variant": "#414c00",
+                        "on-primary": "#2c3400",
+                        "secondary-fixed": "#dde1ff",
+                        "tertiary-fixed-dim": "#c8c6c7",
+                        "surface-container-highest": "#333536",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#0035be",
+                        "on-background": "#e2e2e3",
+                        "outline-variant": "#454932"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "base": "4px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-mono": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-panel {
+            background-color: rgba(10, 10, 11, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(210, 240, 0, 0.15); /* primary-fixed/15 */
+        }
+        .glowing-border:hover {
+            box-shadow: 0 0 8px rgba(210, 240, 0, 0.4);
+            border-color: rgba(210, 240, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- TopNavBar (Mobile) -->
+<nav class="md:hidden flex justify-between items-center px-gutter h-20 fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-primary/15">
+<div class="font-label-caps text-label-caps tracking-widest text-primary-fixed">PACTA</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+<button class="bg-primary-fixed text-on-primary-fixed font-body-md px-4 py-2 hover:bg-primary-fixed-dim transition-colors">Connect Wallet</button>
+</div>
+</nav>
+<!-- SideNavBar (Desktop) -->
+<aside class="h-screen w-64 fixed left-0 top-0 hidden lg:flex flex-col border-r border-primary/10 bg-surface-container-lowest/90 backdrop-blur-2xl py-8 z-40">
+<div class="px-6 mb-12">
+<div class="flex items-center gap-3 mb-8">
+<img class="w-10 h-10 object-contain rounded-DEFAULT bg-surface" data-alt="Pacta Logo, geometric acid lime, dark background tech aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIqjxStmlGmMfT5ZbB6SV-MsometdiQzon1UpH1cWnIFAxDiWyOLnzY--ojGZbXmSgPCXG8FjLVkyEnx4XzZDyrllfGhyCM-kP7NKQi1U1IkQWGQu5kbdfTX3N9B4S7HO8_BH0o3gGgZfh7ueuTi45dUExY37XLfr2xZIadwhuQsi8Tzg3XgoQBSHDNdzxszFVvFYnKPjVR5_iLfrImBIFr9fBwTiIFy6TnnZlEcBXeJ7cbooTbXbw6w"/>
+<div>
+<h1 class="font-label-caps text-primary-fixed-dim text-lg">PACTA</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">ZK-Commitment Protocol</p>
+</div>
+</div>
+<button class="w-full bg-primary-fixed text-on-primary-fixed font-body-md py-3 hover:bg-primary-fixed-dim transition-colors">New Pact</button>
+</div>
+<nav class="flex-1">
+<ul class="space-y-2">
+<!-- Active Item -->
+<li>
+<a class="bg-primary-container/10 text-primary-fixed border-l-4 border-primary-fixed px-6 py-4 flex items-center gap-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">hub</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">Pact Plaza</span>
+</a>
+</li>
+<!-- Inactive Items -->
+<li>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 hover:bg-surface-variant/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">assignment_turned_in</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">My Pacts</span>
+</a>
+</li>
+<li>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 hover:bg-surface-variant/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">add_box</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">Formulate</span>
+</a>
+</li>
+<li>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 hover:bg-surface-variant/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">terminal</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">Manifesto</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="px-6 mt-auto">
+<ul class="space-y-2">
+<li>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 hover:bg-surface-variant/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu_book</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">Docs</span>
+</a>
+</li>
+<li>
+<a class="text-on-tertiary-container hover:bg-surface-variant/50 px-6 py-4 flex items-center gap-3 hover:bg-surface-variant/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">contact_support</span>
+<span class="font-label-caps text-label-caps md:font-body-md md:text-body-md">Support</span>
+</a>
+</li>
+</ul>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 lg:ml-64 pt-20 lg:pt-0 p-margin-mobile lg:p-margin-desktop w-full">
+<div class="max-w-container-max mx-auto space-y-12">
+<!-- Page Header -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">Team Market</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Discover and join verified commitment pools.</p>
+</div>
+<!-- Search & Join Actions -->
+<div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+<div class="relative flex-1 sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-high border-none text-on-surface font-data-mono text-data-mono pl-10 py-3 focus:ring-1 focus:ring-primary-fixed focus:border-primary-fixed transition-all placeholder:text-on-surface-variant/50" placeholder="Search protocols..." type="text"/>
+<div class="absolute bottom-0 left-0 h-[1px] w-full bg-surface-variant transition-colors duration-300 focus-within:bg-primary-fixed"></div>
+</div>
+<div class="relative flex-1 sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">key</span>
+<input class="w-full bg-surface-container-high border-none text-on-surface font-data-mono text-data-mono pl-10 py-3 focus:ring-1 focus:ring-primary-fixed focus:border-primary-fixed transition-all placeholder:text-on-surface-variant/50" placeholder="Join with Code" type="text"/>
+<div class="absolute bottom-0 left-0 h-[1px] w-full bg-surface-variant transition-colors duration-300 focus-within:bg-primary-fixed"></div>
+</div>
+</div>
+</header>
+<!-- Commitment Cards Grid (Bento/Glass style) -->
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="glass-panel p-6 flex flex-col gap-6 glowing-border transition-all duration-300 relative overflow-hidden group cursor-pointer">
+<!-- Subtle glow effect -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary-fixed/5 rounded-full blur-3xl group-hover:bg-primary-fixed/10 transition-all"></div>
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 border border-outline-variant bg-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed" style="font-variation-settings: 'FILL' 1;">code</span>
+</div>
+<span class="font-data-mono text-data-mono text-primary-fixed border border-primary-fixed/30 bg-primary-fixed/5 px-2 py-1">VERIFIED</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">LeetCode Hard Core</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> 14 Days Remaining
+                        </p>
+</div>
+<div class="bg-surface-container-low border border-surface-variant p-4 space-y-4">
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">POOL</span>
+<span class="font-data-mono text-data-mono text-secondary-fixed-dim">5,000 USDC</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">SLASHING YIELD</span>
+<span class="font-data-mono text-data-mono text-primary-fixed">+12.4% Est.</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-4 border-t border-primary/10">
+<div class="flex -space-x-3">
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small abstract 3D rendered avatar showing a dark crystalline structure reflecting faint neon lime light, strict tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBDrWynRDAngp9PXBQFxcpGiXON5Mvh9ICobHqvq1OgqQRA1jAc7TuvP_4uNAqzf_WGl0LVcQIuzsr2oykJu_8McevanMsFrbwpPuy4myB1kBY7U8MDHSY1-3U7mEovIv6vDWdQqiq1Mehj3EiuYH-AvBEuJUrrFrt7RybBGkZqQz49YVu1omQNf0fZ3YDH64GJrp0A5ZnxgtqUK3Z0FRhVPrvLr5WCGcQrt8TwpCmymUK09oPZ04C-Q"/>
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small abstract 3D rendered avatar showing a metallic sphere with glowing circuitry, dark obsidian background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkG3ZZH1D1MhbhZ6w4TSw4i_Hr2OHHRMXhIU0umkLxuPnuYCRnzNyHCqcZbhvQoD0mIAqBiXey0UYHEsAms13WlyIBPv03wrbFe5PbXuzyVfj-_QCAg0yG-JW1aC8ppRliSS_Vfxk7BRbbpOitnz2sm2hdA8VxQ_ESJbmfOoNHTKqMxVyFzNPelvq5OgY7BiFuwBLkaNwDVouwhc2IQx3P6i-hdecEJdFcoNt9mikS15sbqulvtYwDIQ"/>
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small abstract 3D rendered avatar showing a geometric pyramid emitting a subtle blue pulse, high-contrast dark environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUXdJ4Piqkk8LfjqxR3ALYids1hJxDUnEon_SG3p6_xfido9g3iaVuk4c8IoKu5Kt30KJ2WjtChxMU_AG6RD3z_NxgW_wbZgRYHHIRS6ZlISpJMk1TQrr5lGeu7ybwoQjGETiaGFBD5q3MLqxOW0oh3rukhDLFrd6Qe8PJKuh3YPlfhqxP_O5ap7tz4XQeNl2gtA3tIhQZUa-FwnZ8rbHwBhnIzk4HwnXMYaO-lipUx686d7R6SbGK4Q"/>
+<div class="w-8 h-8 rounded-full border border-surface-variant bg-surface-container-high flex items-center justify-center font-data-mono text-[10px] text-on-surface-variant z-10">+42</div>
+</div>
+<button class="bg-transparent border border-secondary-fixed text-secondary-fixed px-4 py-1.5 font-data-mono text-data-mono hover:shadow-[0_0_8px_rgba(0,67,235,0.4)] transition-all">Inspect</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-panel p-6 flex flex-col gap-6 glowing-border transition-all duration-300 relative overflow-hidden group cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 border border-outline-variant bg-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed" style="font-variation-settings: 'FILL' 1;">cruelty_free</span>
+</div>
+<span class="font-data-mono text-data-mono text-primary-fixed border border-primary-fixed/30 bg-primary-fixed/5 px-2 py-1">PROVING</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Duolingo 30 Days Streak</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> 28 Days Remaining
+                        </p>
+</div>
+<div class="bg-surface-container-low border border-surface-variant p-4 space-y-4">
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">POOL</span>
+<span class="font-data-mono text-data-mono text-secondary-fixed-dim">1,250 USDC</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">SLASHING YIELD</span>
+<span class="font-data-mono text-data-mono text-primary-fixed">+4.1% Est.</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-4 border-t border-primary/10">
+<div class="flex -space-x-3">
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small minimal 3D rendered avatar of a dark cube floating above a grid, illuminated by faint green underglow." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_Dw5GtFjCQleuF2jyHgUYlI6j9T--A1qviJhUFOIyz15ha01V7xiF4fMoJV31VU2Rlu73GjQxwZNiziG4yJw9vP8jK8E7uio66nGuBi2g26LSI86dh8wMZt2A9Qowj6O6ZJ7xXJdpk8dl9UUZg7rYh4vCgmPmKzdubAAXn3Eu6ET4qXSRzeE_gBhu53T2d3iDpb6ZovVx5Cr8GwoBAfGmTsjimmtr_EYO4wRYKoTWso5NIIoyK2SerA"/>
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small minimal 3D rendered avatar showing interlaced dark metal rings with a singular bright acid green focal point." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUjjUxL6WgY8WIDEVKHj9ospFVA3ceAIM3jtouDojr4XPup0KwHV_m95xJaEZlY-xTGS7Za5Bdh4CQzaUg56MAXIGpEnMWFVjpwwa5T-Xfe-OjS0brxDnuEtVNvEr75b1HDZwamPWbjbixdLSsPqNVzdP7vpPx6Xdf4IQ_kF1X42crFPumECxbcecTE41Ai5Q-M7uXVgq05yfrS9511PqZNHLSWd_-YxtZzEtN8n_9q0DYRTAhhvlx3g"/>
+<div class="w-8 h-8 rounded-full border border-surface-variant bg-surface-container-high flex items-center justify-center font-data-mono text-[10px] text-on-surface-variant z-10">+18</div>
+</div>
+<button class="bg-transparent border border-secondary-fixed text-secondary-fixed px-4 py-1.5 font-data-mono text-data-mono hover:shadow-[0_0_8px_rgba(0,67,235,0.4)] transition-all">Inspect</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-panel p-6 flex flex-col gap-6 glowing-border transition-all duration-300 relative overflow-hidden group cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 border border-outline-variant bg-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed" style="font-variation-settings: 'FILL' 1;">directions_run</span>
+</div>
+<span class="font-data-mono text-data-mono text-on-surface-variant border border-surface-variant bg-surface-variant/30 px-2 py-1">LOCKED</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">Marathon Prep Elite</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">schedule</span> 0 Days Remaining
+                        </p>
+</div>
+<div class="bg-surface-container-low border border-surface-variant p-4 space-y-4">
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">POOL</span>
+<span class="font-data-mono text-data-mono text-secondary-fixed-dim">10,000 USDC</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-data-mono text-data-mono text-on-tertiary-container">SLASHING YIELD</span>
+<span class="font-data-mono text-data-mono text-primary-fixed">FINALIZING</span>
+</div>
+</div>
+<div class="flex justify-between items-center mt-auto pt-4 border-t border-primary/10">
+<div class="flex -space-x-3">
+<img class="w-8 h-8 rounded-full border border-surface-variant object-cover" data-alt="A small dark grey low-poly sphere, unlit, representing an inactive user state in a tech terminal UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA870P4w1SaKvYvefFQUS9WjuJ9AYNVXAl2M1w04CwdDwl78-32FIV22QSbSPCwDdoSxFC-hTSRL5HynlnAn_2MxNoJ2KL5GUsvFSx77vuJl3ek0pVN1Gj_w4tH2zHH4NvLJ6bkpNA1XIgdt0T8XRMjz3jdLp9JPgsEQIgBGQWPm9Y7j_1Djn7GB1HEt2TojaFIS-FEbnx0JBG9e-36EupdzFYBJdz1tqOaffsSWMg94kObxf_5LetNBw"/>
+<div class="w-8 h-8 rounded-full border border-surface-variant bg-surface-container-high flex items-center justify-center font-data-mono text-[10px] text-on-surface-variant z-10">+102</div>
+</div>
+<button class="bg-transparent border border-surface-variant text-on-surface-variant px-4 py-1.5 font-data-mono text-data-mono cursor-not-allowed">Inspect</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>
