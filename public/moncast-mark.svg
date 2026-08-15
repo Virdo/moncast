@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Moncast</title>
+  <rect width="64" height="64" fill="#0a0a0b"/>
+  <path d="M11 13h31l11 11v27H11z" fill="none" stroke="#dfff00" stroke-width="3"/>
+  <path d="M42 13v11h11M20 43V23h12.5c6 0 10 3.7 10 9.2 0 5.7-4.1 9.3-10 9.3H25" fill="none" stroke="#dfff00" stroke-width="4"/>
+  <circle cx="48" cy="48" r="3" fill="#2e5bff"/>
+</svg>

@@ -1,11 +1,15 @@
 node_modules/
 .next/
+.vinext/
 dist/
 .env
 .env.*
 !.env.example
 .DS_Store
 coverage/
+*.tsbuildinfo
 cache/
 out/
 broadcast/
+data/automation-registry.json
+public/deployment-artifacts.json
