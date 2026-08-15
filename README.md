@@ -13,6 +13,10 @@ npm run dev
 
 打开 `http://localhost:3003`。合约部署工具位于 `/deploy`。
 
+## Vercel 部署
+
+生产站点使用 Vinext + Nitro 的 Vercel Build Output API 适配，构建命令为 `npm run build:vercel`。当前演示部署不启用 Vercel Cron；每日 23:00–24:00 自动验真仍作为协议自动化架构的一部分保留在代码与项目说明中，可在接入持久化任务存储后启用。
+
 ## Monad Testnet 部署
 
 当前部署（Chain ID `10143`）：
