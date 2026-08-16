@@ -36,29 +36,29 @@ Moncast 是运行于 **Monad 高性能区块链** 之上的**可验证自律承�
 
 ```mermaid
 flowchart TD
-    A[发起契约 / 设定目标与招募期 1-7天] --> B[成员加入 / 登记意向 + 授权 USDC]
-    B --> C{招募截止 or 发起人立即开局}
-    C -->|批量 transferFrom| D[正式签约 / 激活有效质押成员]
-    D --> E[日常履约期]
-    E --> F[每日 23:00-24:00 本地时区自动验真]
-    F -->|提交证明| G[状态标记 Completed]
-    E -->|超时 48h 未履约| H[任何人无许可清算 Slashed]
-    G --> I[周期结束]
+    A["发起契约 / 设定目标与招募期 1-7 天"] --> B["成员加入 / 登记意向 + 授权 USDC"]
+    B --> C{"招募截止 or 发起人立即开局"}
+    C -->|"批量 transferFrom"| D["正式签约 / 激活有效质押成员"]
+    D --> E["日常履约期"]
+    E --> F["每日 23:00-24:00 本地时区自动验真"]
+    F -->|"提交证明"| G["状态标记 Completed"]
+    E -->|"超时 48h 未履约"| H["任何人无许可清算 Slashed"]
+    G --> I["周期结束"]
     H --> I
-    I --> J[O(1) 懒结算: 返还本金 + 质押收益 + 违约分润]
+    I --> J["O(1) 懒结算: 返还本金 + 质押收益 + 违约分润"]
 ```
 
 ### 2. 信任与隐私安全边界
 
 ```mermaid
 flowchart LR
-    subgraph 链下私密环境
-        L[LeetCode / Duolingo / HTTPS API] -->|公开数据获取| V[Moncast Verifier]
-        V -->|提取最小事实 + 计算摘要| P[Attested Proof 生成]
+    subgraph S1 ["链下私密环境"]
+        L["LeetCode / Duolingo / HTTPS API"] -->|"公开数据获取"| V["Moncast Verifier"]
+        V -->|"提取最小事实 + 计算摘要"| P["Attested Proof 生成"]
     end
-    subgraph 链上智能合约 (Monad Testnet)
-        P -->|提交证明 member + epoch + nullifier| C[AttestedProofVerifier / MoncastProtocol]
-        C --> S[更新完成状态 / 触发清算与分润结算]
+    subgraph S2 ["链上智能合约 (Monad Testnet)"]
+        P -->|"提交证明 member + epoch + nullifier"| C["AttestedProofVerifier / MoncastProtocol"]
+        C --> S["更新完成状态 / 触发清算与分润结算"]
     end
 ```
 
